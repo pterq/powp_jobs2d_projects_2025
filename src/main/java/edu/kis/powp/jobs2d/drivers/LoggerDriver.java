@@ -28,4 +28,8 @@ public class LoggerDriver implements Job2dDriver {
         logger.info(String.format("setPosition: (%d, %d) [op: %d]", x, y, operationCount));
     }
 
+    @Override
+    public String toString() {
+        return "Logger driver";
+    }
 }
