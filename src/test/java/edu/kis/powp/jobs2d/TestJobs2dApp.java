@@ -34,10 +34,12 @@ public class TestJobs2dApp {
                 DriverFeature.getDriverManager());
         SelectTestCompoundCommandOptionListener selectTestCompoundCommandOptionListener = new SelectTestCompoundCommandOptionListener(
                 DriverFeature.getDriverManager());
+        SelectCountCommandOptionListener selectCountCommandOptionListener = new SelectCountCommandOptionListener();
 
         application.addTest("Figure Joe 1", selectTestFigureOptionListener);
         application.addTest("Figure Joe 2", selectTestFigure2OptionListener);
         application.addTest("Figure House - CompoundCommand", selectTestCompoundCommandOptionListener);
+        application.addTest("Count commands - Visitor", selectCountCommandOptionListener);
     }
 
     /**
