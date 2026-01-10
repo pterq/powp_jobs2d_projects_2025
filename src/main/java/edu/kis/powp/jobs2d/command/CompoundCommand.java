@@ -23,7 +23,11 @@ public class CompoundCommand implements ICompoundCommand {
      * @param commands the list of commands to be executed in sequence
      */
     private CompoundCommand(List<DriverCommand> commands) {
-        this.commands = Collections.unmodifiableList(new ArrayList<>(commands));
+        List<DriverCommand> copied = new ArrayList<>();
+        for (DriverCommand command : commands) {
+            copied.add(command.copy());
+        }
+        this.commands = Collections.unmodifiableList(copied);
     }
 
     /**
@@ -48,6 +52,14 @@ public class CompoundCommand implements ICompoundCommand {
         return commands.iterator();
     }
 
+    @Override
+    public CompoundCommand copy() {
+        List<DriverCommand> copied = new ArrayList<>();
+        for (DriverCommand command : commands) {
+            copied.add(command.copy());
+        }
+        return new CompoundCommand(copied);
+    }
 
     /**
      * Factory method to create a CompoundCommand from a list of commands.
@@ -162,4 +174,5 @@ public class CompoundCommand implements ICompoundCommand {
     public static Builder builder() {
         return new Builder();
     }
+
 }
