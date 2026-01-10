@@ -5,7 +5,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 import edu.kis.powp.jobs2d.Job2dDriver;
 
-public class AnimatedDriver implements Job2dDriver {
+public class AnimatedDriverDecorator implements Job2dDriver {
     private static final int DEFAULT_DELAY_MS = 100;
     
     private final Job2dDriver targetDriver;
@@ -14,11 +14,11 @@ public class AnimatedDriver implements Job2dDriver {
     private final Thread executionThread;
     private volatile boolean running = true;
 
-    public AnimatedDriver(Job2dDriver targetDriver) {
+    public AnimatedDriverDecorator(Job2dDriver targetDriver) {
         this(targetDriver, DEFAULT_DELAY_MS);
     }
 
-    public AnimatedDriver(Job2dDriver targetDriver, int delayMs) {
+    public AnimatedDriverDecorator(Job2dDriver targetDriver, int delayMs) {
         this.targetDriver = targetDriver;
         this.delayMs = delayMs;
         this.operationQueue = new LinkedBlockingQueue<>();
