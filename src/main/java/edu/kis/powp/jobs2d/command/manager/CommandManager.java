@@ -4,7 +4,7 @@ import java.util.List;
 
 import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
-import edu.kis.powp.jobs2d.command.visitor.CommandCounterVisitor;
+import edu.kis.powp.jobs2d.visitor.CommandCounterVisitor;
 import edu.kis.powp.observer.Publisher;
 
 /**
@@ -53,12 +53,12 @@ public class CommandManager {
         if (getCurrentCommand() == null) {
             return "No command loaded";
         } else {
+            CommandCounterVisitor.CommandStats stats = CommandCounterVisitor.countCommands(getCurrentCommand());
             StringBuilder sb = new StringBuilder(getCurrentCommand().toString());
             sb.append("\n\nStats:\n");
-            sb.append("Total commands: ").append(CommandCounterVisitor.countAll(getCurrentCommand())).append("\n");
-            sb.append("OperateTo count: ").append(CommandCounterVisitor.countOperateTo(getCurrentCommand())).append("\n");
-            sb.append("SetPosition count: ").append(CommandCounterVisitor.countSetPosition(getCurrentCommand())).append("\n");
-            sb.append("Compound count: ").append(CommandCounterVisitor.countCompound(getCurrentCommand())).append("\n");
+            sb.append("Total commands: ").append(stats.getCount()).append("\n");
+            sb.append("OperateTo count: ").append(stats.getOperateToCount()).append("\n");
+            sb.append("SetPosition count: ").append(stats.getSetPositionCount()).append("\n");
             return sb.toString();
         }
     }
