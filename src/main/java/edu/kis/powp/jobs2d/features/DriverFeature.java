@@ -1,7 +1,7 @@
 package edu.kis.powp.jobs2d.features;
 
 import edu.kis.powp.appbase.Application;
-import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 import edu.kis.powp.jobs2d.drivers.DriverManager;
 import edu.kis.powp.jobs2d.drivers.SelectDriverMenuOptionListener;
 
@@ -28,9 +28,9 @@ public class DriverFeature {
      * Add driver to context, create button in driver menu.
      * 
      * @param name   Button name.
-     * @param driver Job2dDriver object.
+     * @param driver VisitableJob2dDriver object.
      */
-    public static void addDriver(String name, Job2dDriver driver) {
+    public static void addDriver(String name, VisitableJob2dDriver driver) {
         SelectDriverMenuOptionListener listener = new SelectDriverMenuOptionListener(driver, driverManager);
         app.addComponentMenuElement(DriverFeature.class, name, listener);
     }

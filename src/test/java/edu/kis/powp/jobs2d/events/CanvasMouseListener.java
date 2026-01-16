@@ -7,7 +7,7 @@ import static java.awt.event.MouseEvent.BUTTON1;
 import static java.awt.event.MouseEvent.BUTTON3;
 import java.awt.event.MouseListener;
 
-import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 import edu.kis.powp.jobs2d.features.DriverFeature;
 
 public class CanvasMouseListener implements MouseListener {
@@ -37,14 +37,14 @@ public class CanvasMouseListener implements MouseListener {
 
     private void rightMouseClicked(MouseEvent e) {
         Point point = calculateCanvasPosition(e);
-        Job2dDriver driver = DriverFeature.getDriverManager().getCurrentDriver();
+        VisitableJob2dDriver driver = DriverFeature.getDriverManager().getCurrentDriver();
 
 		driver.setPosition(point.x, point.y);
     }
     
 	public void leftMouseClicked(MouseEvent e) {
         Point point = calculateCanvasPosition(e);
-        Job2dDriver driver = DriverFeature.getDriverManager().getCurrentDriver();
+        VisitableJob2dDriver driver = DriverFeature.getDriverManager().getCurrentDriver();
 
 		driver.operateTo(point.x, point.y);
     }

@@ -3,22 +3,23 @@ package edu.kis.powp.jobs2d.drivers;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
-import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
+import edu.kis.powp.jobs2d.visitor.DriverVisitor;
 
-public class AnimatedDriverDecorator implements Job2dDriver {
+public class AnimatedDriverDecorator implements VisitableJob2dDriver {
     private static final int DEFAULT_DELAY_MS = 100;
     
-    private final Job2dDriver targetDriver;
+    private final VisitableJob2dDriver targetDriver;
     private volatile int delayMs;
     private final BlockingQueue<Runnable> operationQueue;
     private final Thread executionThread;
     private volatile boolean running = true;
 
-    public AnimatedDriverDecorator(Job2dDriver targetDriver) {
+    public AnimatedDriverDecorator(VisitableJob2dDriver targetDriver) {
         this(targetDriver, DEFAULT_DELAY_MS);
     }
 
-    public AnimatedDriverDecorator(Job2dDriver targetDriver, int delayMs) {
+    public AnimatedDriverDecorator(VisitableJob2dDriver targetDriver, int delayMs) {
         this.targetDriver = targetDriver;
         this.delayMs = delayMs;
         this.operationQueue = new LinkedBlockingQueue<>();
@@ -68,6 +69,11 @@ public class AnimatedDriverDecorator implements Job2dDriver {
 
     public void setSpeedSlow() {
         this.delayMs = 400;
+    }
+
+    @Override
+    public void accept(DriverVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

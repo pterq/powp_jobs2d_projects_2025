@@ -1,5 +1,7 @@
 package edu.kis.powp.jobs2d;
 
+import edu.kis.powp.jobs2d.visitor.DriverVisitor;
+
 class MockDriver implements Job2dDriver {
 
     int x = 0;

@@ -2,22 +2,27 @@ package edu.kis.powp.jobs2d.drivers;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Iterator;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
+import edu.kis.powp.jobs2d.visitor.DriverVisitor;
 
-import edu.kis.powp.jobs2d.Job2dDriver;
+public class DriverComposite implements VisitableJob2dDriver {
+    private List<VisitableJob2dDriver> drivers;
 
-public class DriverComposite implements Job2dDriver {
-    private List<Job2dDriver> drivers;
-
-    public DriverComposite(List<Job2dDriver> drivers) {
+    public DriverComposite(List<VisitableJob2dDriver> drivers) {
         this.drivers = drivers;
     }
 
-    public void add(Job2dDriver driver) {
+    public void add(VisitableJob2dDriver driver) {
         drivers.add(driver);
     }
 
-    public void remove(Job2dDriver driver) {
+    public void remove(VisitableJob2dDriver driver) {
         drivers.remove(driver);
+    }
+
+    public Iterator<VisitableJob2dDriver> iterator() {
+        return drivers.iterator();
     }
 
     @Override
@@ -28,6 +33,11 @@ public class DriverComposite implements Job2dDriver {
     @Override
     public void operateTo(int x, int y) {
         drivers.stream().forEach(driver -> driver.operateTo(x, y));
+    }
+
+    @Override
+    public void accept(DriverVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
