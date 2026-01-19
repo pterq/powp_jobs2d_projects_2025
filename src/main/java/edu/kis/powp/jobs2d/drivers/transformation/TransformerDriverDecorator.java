@@ -13,6 +13,14 @@ public class TransformerDriverDecorator implements VisitableJob2dDriver {
         this.strategy = strategy;
     }
 
+    public Job2dDriver getDriver() {
+        return driver;
+    }
+
+    public TransformStrategy getStrategy() {
+        return strategy;
+    }
+
     @Override
     public void setPosition(int x, int y) {
         TransformCords cords = strategy.transform(new TransformCords(x, y));
