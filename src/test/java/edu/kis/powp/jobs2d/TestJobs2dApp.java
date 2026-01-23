@@ -67,6 +67,10 @@ public class TestJobs2dApp {
     private static void setupCommandTests(Application application) {
         ViewFeature.addMouseListenerToControlPanel(new CanvasMouseListener());
         application.addTest("Load secret command", new SelectLoadSecretCommandOptionListener());
+        application.addTest("Flip command", new SelectRunCurrentFlippedCommandOptionListener());
+        application.addTest("Rotate 90 command", new SelectRunCurrentRotatedCommandOptionListener());
+        application.addTest("Scale 2.0 command", new SelectRunCurrentScaledUpCommandOptionListener());
+        application.addTest("Scale 0.5 command", new SelectRunCurrentScaledDownCommandOptionListener());
         application.addTest("Run command", new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
     }
 
