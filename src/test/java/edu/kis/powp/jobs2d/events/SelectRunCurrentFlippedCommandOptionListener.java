@@ -11,11 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class SelectRunCurrentFlippedCommandOptionListener implements ActionListener {
-    private DriverManager driverManager;
-
-    public SelectRunCurrentFlippedCommandOptionListener(DriverManager driverManager) {
-        this.driverManager = driverManager;
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
