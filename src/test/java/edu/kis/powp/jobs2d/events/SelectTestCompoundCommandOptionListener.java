@@ -46,7 +46,7 @@ public class SelectTestCompoundCommandOptionListener implements ActionListener {
         CompoundCommand house = CompoundCommand.builder()
                         .add(square) // adds other build (base)
                         .add(roofCommands) // adds new list of commands (roof)
-                        .setName("House Test Command")
+                        .setName("Load house command")
                         .build(); // returns new immutable object (base+roof)
         CommandManager commandManager = CommandsFeature.getDriverCommandManager();
         commandManager.setCurrentCommand(house);
