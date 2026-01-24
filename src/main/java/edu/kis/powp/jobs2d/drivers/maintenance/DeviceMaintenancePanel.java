@@ -1,4 +1,4 @@
-package edu.kis.powp.jobs2d.drivers;
+package edu.kis.powp.jobs2d.drivers.maintenance;
 
 import edu.kis.powp.appbase.gui.WindowComponent;
 import javax.swing.*;
@@ -22,12 +22,12 @@ public class DeviceMaintenancePanel extends JFrame implements InkUsageObserver, 
         setLayout(new GridLayout(4, 1, 5, 5));
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
-        this.inkProgressBar = setupSection("Ink Level:", "Refill", e -> {
+        this.inkProgressBar = setupSection("  Ink Level:", "Refill", e -> {
             if (inkDecorator != null) inkDecorator.refill();
             JOptionPane.showMessageDialog(this, "Ink refilled");
         });
 
-        this.healthProgressBar = setupSection("Device Health:", "Maintenance", e -> {
+        this.healthProgressBar = setupSection("  Device Health:", "Maintenance", e -> {
             if (maintenanceDecorator != null) maintenanceDecorator.performMaintenance();
             JOptionPane.showMessageDialog(this, "Device repaired");
         });
