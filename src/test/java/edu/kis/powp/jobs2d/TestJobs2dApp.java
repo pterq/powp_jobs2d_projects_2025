@@ -71,7 +71,6 @@ public class TestJobs2dApp {
         application.addTest("Rotate 90 command", new SelectRunCurrentRotatedCommandOptionListener());
         application.addTest("Scale 2.0 command", new SelectRunCurrentScaledUpCommandOptionListener());
         application.addTest("Scale 0.5 command", new SelectRunCurrentScaledDownCommandOptionListener());
-        application.addTest("Run command", new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
     }
 
     /**
@@ -138,7 +137,7 @@ public class TestJobs2dApp {
 
     private static void setupWindows(Application application) {
 
-        CommandManagerWindow commandManager = new CommandManagerWindow(CommandsFeature.getDriverCommandManager());
+        CommandManagerWindow commandManager = new CommandManagerWindow(CommandsFeature.getDriverCommandManager(), DriverFeature.getDriverManager());
         SelectImportCommandOptionListener importListener = new SelectImportCommandOptionListener(
                 CommandsFeature.getDriverCommandManager(),
                 new JsonCommandImportParser()
