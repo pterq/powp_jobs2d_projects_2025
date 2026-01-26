@@ -112,6 +112,15 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
     }
 
     /**
+     * Returns the delegate driver.
+     *
+     * @return The delegate driver.
+     */
+    public VisitableJob2dDriver getDelegate() {
+        return delegate;
+    }
+
+    /**
      * Resets both counters to zero.
      */
     public void reset() {
@@ -123,7 +132,7 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
 
     @Override
     public void accept(DriverVisitor visitor) {
-        delegate.accept(visitor);
+        visitor.visit(this);
     }
 
     @Override

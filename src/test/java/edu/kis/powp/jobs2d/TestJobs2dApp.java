@@ -17,6 +17,7 @@ import edu.kis.powp.jobs2d.command.gui.SelectImportCommandOptionListener;
 import edu.kis.powp.jobs2d.command.importer.JsonCommandImportParser;
 import edu.kis.powp.jobs2d.drivers.AnimatedDriverDecorator;
 import edu.kis.powp.jobs2d.drivers.LoggerDriver;
+import edu.kis.powp.jobs2d.drivers.RecordingDriverDecorator;
 import edu.kis.powp.jobs2d.drivers.DriverComposite;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
@@ -26,9 +27,11 @@ import edu.kis.powp.jobs2d.features.CommandsFeature;
 import edu.kis.powp.jobs2d.features.DrawerFeature;
 import edu.kis.powp.jobs2d.features.DriverFeature;
 import edu.kis.powp.jobs2d.features.MonitoringFeature;
+import edu.kis.powp.jobs2d.features.ViewFeature;
 
 import edu.kis.powp.jobs2d.drivers.transformation.DriverFeatureFactory;
 import edu.kis.powp.jobs2d.canvas.CanvasFactory;
+
 
 public class TestJobs2dApp {
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -61,8 +64,12 @@ public class TestJobs2dApp {
      * @param application Application context.
      */
     private static void setupCommandTests(Application application) {
-        application.getFreePanel().addMouseListener(new CanvasMouseListener());
+        ViewFeature.addMouseListenerToControlPanel(new CanvasMouseListener());
         application.addTest("Load secret command", new SelectLoadSecretCommandOptionListener());
+        application.addTest("Flip command", new SelectRunCurrentFlippedCommandOptionListener());
+        application.addTest("Rotate 90 command", new SelectRunCurrentRotatedCommandOptionListener());
+        application.addTest("Scale 2.0 command", new SelectRunCurrentScaledUpCommandOptionListener());
+        application.addTest("Scale 0.5 command", new SelectRunCurrentScaledDownCommandOptionListener());
         application.addTest("Run command", new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
     }
 
@@ -102,6 +109,11 @@ public class TestJobs2dApp {
         VisitableJob2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
 
+        RecordingDriverDecorator recordingDriver = new RecordingDriverDecorator(basicLineDriver);
+        SelectLoadRecordedCommandOptionListener selectLoadRecordedCommandOptionListener = new SelectLoadRecordedCommandOptionListener(recordingDriver);
+        application.addTest("Stop recording & Load recorded command", selectLoadRecordedCommandOptionListener);
+        DriverFeature.addDriver("Recording Driver", recordingDriver);
+
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
         VisitableJob2dDriver rotatedDriver = DriverFeatureFactory.createRotateDriver(basicLineDriver, 45);
@@ -131,6 +143,7 @@ public class TestJobs2dApp {
         CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(windowObserver);
 
         CommandPreviewWindow commandPreviewWindow = new CommandPreviewWindow();
+        commandManager.setPreviewWindow(commandPreviewWindow);
         application.addWindowComponent("Command Preview", commandPreviewWindow);
         CommandPreviewWindowObserver previewObserver = new CommandPreviewWindowObserver(
                 commandPreviewWindow, 
@@ -150,6 +163,21 @@ public class TestJobs2dApp {
         CanvasFeature.addCanvas(CanvasFactory.createA3());
         CanvasFeature.addCanvas(CanvasFactory.createB4());
         CanvasFeature.addCanvas(CanvasFactory.createCircle(200));
+    }
+
+    /**
+     * Setup view options (zoom, pan, reset).
+     *
+     * @param application Application context.
+     */
+    private static void setupView(Application application) {
+        SelectZoomInOptionListener zoomInListener = new SelectZoomInOptionListener();
+        SelectZoomOutOptionListener zoomOutListener = new SelectZoomOutOptionListener();
+        SelectResetViewOptionListener resetViewListener = new SelectResetViewOptionListener();
+
+        application.addComponentMenuElement(ViewFeature.class, "Zoom in", zoomInListener);
+        application.addComponentMenuElement(ViewFeature.class, "Zoom out", zoomOutListener);
+        application.addComponentMenuElement(ViewFeature.class, "Reset", resetViewListener);
     }
 
     /**
@@ -178,6 +206,7 @@ public class TestJobs2dApp {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Application app = new Application("Jobs 2D");
+                ViewFeature.setupViewPlugin(app);
                 DrawerFeature.setupDrawerPlugin(app);
                 CanvasFeature.setupCanvasPlugin(app);
                 CommandsFeature.setupCommandManager();
@@ -186,6 +215,7 @@ public class TestJobs2dApp {
                 setupDrivers(app);
                 MonitoringFeature.setupMonitoringPlugin(app, logger);
                 setupCanvases(app);
+                setupView(app);
                 setupPresetTests(app);
                 setupCommandTests(app);
                 setupLogger(app);

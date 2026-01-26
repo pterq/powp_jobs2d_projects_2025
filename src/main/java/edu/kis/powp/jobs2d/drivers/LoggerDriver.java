@@ -17,6 +17,10 @@ public class LoggerDriver implements VisitableJob2dDriver {
         this.logger = logger;
     }
 
+    public Logger getLogger() {
+        return logger;
+    }
+
     @Override
     public void operateTo(int x, int y) {
         operationCount++;
