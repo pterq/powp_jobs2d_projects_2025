@@ -10,12 +10,20 @@ public class DrawerFeature {
 
     private static DrawPanelController drawerController;
 
+    public DrawerFeature() {
+    }
+
+    @Override
+    public void setup(Application application) {
+        setupDrawerPlugin(application);
+    }
+
     /**
      * Setup Drawer Plugin and add to application.
-     * 
+     *
      * @param application Application context.
      */
-    public static void setupDrawerPlugin(Application application) {
+    private static void setupDrawerPlugin(Application application) {
         SelectClearPanelOptionListener selectClearPanelOptionListener = new SelectClearPanelOptionListener();
 
         drawerController = new DrawPanelController();
@@ -31,10 +39,15 @@ public class DrawerFeature {
 
     /**
      * Get controller of application drawing panel.
-     * 
+     *
      * @return drawPanelController.
      */
     public static DrawPanelController getDrawerController() {
         return drawerController;
+    }
+
+    @Override
+    public String getName() {
+        return "Drawer";
     }
 }
