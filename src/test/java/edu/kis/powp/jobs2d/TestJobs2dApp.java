@@ -19,8 +19,8 @@ import edu.kis.powp.jobs2d.drivers.*;
 import edu.kis.powp.jobs2d.drivers.LoggerDriver;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
 import edu.kis.powp.jobs2d.drivers.maintenance.DeviceMaintenancePanel;
-import edu.kis.powp.jobs2d.drivers.maintenance.InkUsageDriverDecorator;
-import edu.kis.powp.jobs2d.drivers.maintenance.ServiceDriverDecorator;
+import edu.kis.powp.jobs2d.drivers.maintenance.DeviceUsageMonitor;
+import edu.kis.powp.jobs2d.drivers.maintenance.UsageTrackingDriverDecorator;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 import edu.kis.powp.jobs2d.events.*;
 import edu.kis.powp.jobs2d.features.CanvasFeature;
@@ -127,14 +127,16 @@ public class TestJobs2dApp {
         DriverFeature.addDriver("Special line [monitored]", monitoredSpecialLine);
 
         // Add Device Maintenance Panel
-        DeviceMaintenancePanel devicePanel = new DeviceMaintenancePanel();
-        application.addWindowComponent("Device Maintenance", devicePanel);
         VisitableJob2dDriver coreDriver = new LineDriverAdapter(DrawerFeature.getDrawerController(), LineFactory.getBasicLine(), "basic");
-        InkUsageDriverDecorator inkDecorator = new InkUsageDriverDecorator(coreDriver, 500.0);
-        ServiceDriverDecorator fullSimulationDriver = new ServiceDriverDecorator(inkDecorator, 40);
-        devicePanel.setInkDecorator(inkDecorator);
-        devicePanel.setMaintenanceDecorator(fullSimulationDriver);
-        DriverFeature.addDriver("Device Maintenance simulation", fullSimulationDriver);
+        UsageTrackingDriverDecorator maintenanceDriver = new UsageTrackingDriverDecorator(coreDriver, "Device Simulator", 500, 40);
+        DeviceMaintenancePanel devicePanel = new DeviceMaintenancePanel(
+                e -> maintenanceDriver.refillInk(),
+                e -> maintenanceDriver.performMaintenance()
+        );
+        application.addWindowComponent("Device Maintenance", devicePanel);
+        DeviceUsageMonitor monitor = new DeviceUsageMonitor(devicePanel, 40);
+        maintenanceDriver.addObserver(monitor);
+        DriverFeature.addDriver("Device Maintenance simulation", maintenanceDriver);
 
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);

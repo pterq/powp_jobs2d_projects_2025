@@ -5,32 +5,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class DeviceMaintenancePanel extends JFrame implements InkUsageObserver, ServiceObserver, WindowComponent {
+public class DeviceMaintenancePanel extends JFrame implements DeviceStatusView, WindowComponent {
 
     private final JProgressBar inkProgressBar;
-    private InkUsageDriverDecorator inkDecorator;
-    private boolean emptyInkWarningShown = false;
-    private boolean lowInkWarningShown = false;
-
     private final JProgressBar healthProgressBar;
-    private ServiceDriverDecorator maintenanceDecorator;
-    private boolean maintenanceWarningShown = false;
 
-    public DeviceMaintenancePanel() {
+    public DeviceMaintenancePanel(ActionListener refillAction, ActionListener repairAction) {
         setTitle("Device Maintenance");
         setSize(400, 200);
         setLayout(new GridLayout(4, 1, 5, 5));
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
-        this.inkProgressBar = setupSection("  Ink Level:", "Refill", e -> {
-            if (inkDecorator != null) inkDecorator.refill();
-            JOptionPane.showMessageDialog(this, "Ink refilled");
-        });
-
-        this.healthProgressBar = setupSection("  Device Health:", "Maintenance", e -> {
-            if (maintenanceDecorator != null) maintenanceDecorator.performMaintenance();
-            JOptionPane.showMessageDialog(this, "Device repaired");
-        });
+        this.inkProgressBar = setupSection("  Ink Level:", "Refill", refillAction);
+        this.healthProgressBar = setupSection("  Device Health:", "Maintenance", repairAction);
 
         setVisible(false);
     }
@@ -53,47 +40,27 @@ public class DeviceMaintenancePanel extends JFrame implements InkUsageObserver, 
         return bar;
     }
 
-    public void setInkDecorator(InkUsageDriverDecorator inkDecorator) {
-        this.inkDecorator = inkDecorator;
-        this.inkDecorator.addObserver(this);
-    }
-
-    public void setMaintenanceDecorator(ServiceDriverDecorator maintenanceDecorator) {
-        this.maintenanceDecorator = maintenanceDecorator;
-        this.maintenanceDecorator.addObserver(this);
-    }
-
     @Override
     public void updateInkLevel(double currentLevel, double maxLevel) {
         SwingUtilities.invokeLater(() -> {
-            int pct = (int) ((currentLevel / maxLevel) * 100);
-            updateBar(inkProgressBar, pct, ((int) currentLevel + " / " + (int) maxLevel + " units"));
-
-            if (pct < 40 && !lowInkWarningShown) {
-                lowInkWarningShown = true;
-                JOptionPane.showMessageDialog(this, "Warning: Ink level below 40%!");
+            if (maxLevel > 0) {
+                int pct = (int) ((currentLevel / maxLevel) * 100);
+                updateBar(inkProgressBar, pct, ((int) currentLevel + " / " + (int) maxLevel + " units"));
+            } else {
+                updateBar(inkProgressBar, 100, "N/A");
             }
-            if (currentLevel <= 0 && !emptyInkWarningShown) {
-                emptyInkWarningShown = true;
-                JOptionPane.showMessageDialog(this, "Error: Ink Depleted. Cannot draw anymore.");
-            }
-
-            if (pct >= 40) lowInkWarningShown = false;
-            if (currentLevel > 0) emptyInkWarningShown = false;
         });
     }
 
     @Override
     public void updateServiceState(int usageCount, int maxUsage) {
         SwingUtilities.invokeLater(() -> {
-            double health = Math.max(0, 100.0 * (1.0 - ((double) usageCount / maxUsage)));
-            updateBar(healthProgressBar, (int) health, ("Health: " + (int)health + "% Operations: " + usageCount));
-
-            if (usageCount >= maxUsage && !maintenanceWarningShown) {
-                maintenanceWarningShown = true;
-                JOptionPane.showMessageDialog(this, "Error: Mechanism jammed");
+            if (maxUsage > 0) {
+                double health = Math.max(0, 100.0 * (1.0 - ((double) usageCount / maxUsage)));
+                updateBar(healthProgressBar, (int) health, ("Health: " + (int) health + "% Operations: " + usageCount));
+            } else {
+                updateBar(healthProgressBar, 100, "N/A");
             }
-            if (usageCount < maxUsage) maintenanceWarningShown = false;
         });
     }
 
@@ -103,6 +70,16 @@ public class DeviceMaintenancePanel extends JFrame implements InkUsageObserver, 
         if (value < 20) bar.setForeground(Color.RED);
         else if (value < 40) bar.setForeground(Color.ORANGE);
         else bar.setForeground(new Color(0, 150, 0));
+    }
+
+    @Override
+    public void showWarning(String message) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message));
+    }
+
+    @Override
+    public void showError(String message) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message));
     }
 
     @Override

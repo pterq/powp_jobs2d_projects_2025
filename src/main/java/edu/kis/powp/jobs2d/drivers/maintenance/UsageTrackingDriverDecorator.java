@@ -1,7 +1,10 @@
-package edu.kis.powp.jobs2d.drivers;
+package edu.kis.powp.jobs2d.drivers.maintenance;
 
 import edu.kis.powp.jobs2d.visitor.DriverVisitor;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A decorator that wraps any {@link VisitableJob2dDriver} and counts distance travelled
@@ -17,6 +20,15 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
     private double travelDistance = 0.0;
     private double drawingDistance = 0.0;
 
+    private double inkLevel;
+    private double maxInkLevel;
+    private boolean usageCheckEnabled = false; // for backward compatibility
+
+    private int operationCount = 0;
+    private int maxOperations;
+
+    private final List<UsageObserver> observers = new ArrayList<>();
+
     /**
      * Wraps a driver to track its usage.
      *
@@ -28,6 +40,16 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
         this.label = label;
     }
 
+    // second constructor for backward compatibility
+    public UsageTrackingDriverDecorator(VisitableJob2dDriver delegate, String label, double maxInk, int maxOps) {
+        this.delegate = delegate;
+        this.label = label;
+        this.maxInkLevel = maxInk;
+        this.inkLevel = maxInk;
+        this.maxOperations = maxOps;
+        this.usageCheckEnabled = true;
+    }
+
     /**
      * Repositions without drawing. Counts as travel distance.
      *
@@ -36,9 +58,16 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
      */
     @Override
     public void setPosition(int x, int y) {
+        if (usageCheckEnabled && isBroken()) return;
+
         registerMovement(x, y, false);
         delegate.setPosition(x, y);
         updatePosition(x, y);
+
+        if (usageCheckEnabled) {
+            incrementOpCount();
+            notifyObservers();
+        }
     }
 
     /**
@@ -49,9 +78,56 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
      */
     @Override
     public void operateTo(int x, int y) {
-        registerMovement(x, y, true);
-        delegate.operateTo(x, y);
-        updatePosition(x, y);
+        if (usageCheckEnabled && isBroken()) return;
+
+        if (usageCheckEnabled) {
+            double distance = Math.hypot(x - lastX, y - lastY);
+
+            if (distance == 0) {
+                delegate.operateTo(x, y);
+                return;
+            }
+
+            if (inkLevel >= distance) {
+                registerMovement(x, y, true);
+                delegate.operateTo(x, y);
+                this.inkLevel -= distance;
+            } else if (inkLevel > 0) {
+                // running out of ink during drawing
+
+                // part of line we can draw
+                double ratio = inkLevel / distance;
+
+                // coords where the ink will run out
+                int stopX = (int) (lastX + (x - lastX) * ratio);
+                int stopY = (int) (lastY + (y - lastY) * ratio);
+
+                // draw until ink runs out
+                double partialDistance = Math.hypot(stopX - lastX, stopY - lastY);
+                travelDistance += partialDistance;
+                drawingDistance += partialDistance;
+
+                delegate.operateTo(stopX, stopY);
+
+                updatePosition(stopX, stopY);
+
+                registerMovement(x, y, false);
+                delegate.setPosition(x, y);
+                this.inkLevel = 0;
+            } else {
+                // if no ink left - move the head without drawing
+                registerMovement(x, y, false);
+                delegate.setPosition(x, y);
+            }
+
+            incrementOpCount();
+            updatePosition(x, y);
+            notifyObservers();
+        } else {
+            registerMovement(x, y, true);
+            delegate.operateTo(x, y);
+            updatePosition(x, y);
+        }
     }
 
     /**
@@ -134,5 +210,36 @@ public class UsageTrackingDriverDecorator implements VisitableJob2dDriver {
     @Override
     public String toString() {
         return String.format("%s [tracked]", delegate.toString());
+    }
+
+    private void incrementOpCount() {
+        operationCount++;
+    }
+
+    private boolean isBroken() {
+        boolean broken = operationCount >= maxOperations;
+        if (broken) notifyObservers();
+        return broken;
+    }
+
+    public void refillInk() {
+        this.inkLevel = maxInkLevel;
+        notifyObservers();
+    }
+
+    public void performMaintenance() {
+        this.operationCount = 0;
+        notifyObservers();
+    }
+
+    public void addObserver(UsageObserver observer) {
+        observers.add(observer);
+        observer.updateUsage(inkLevel, maxInkLevel, operationCount, maxOperations);
+    }
+
+    private void notifyObservers() {
+        for (UsageObserver observer : observers) {
+            observer.updateUsage(inkLevel, maxInkLevel, operationCount, maxOperations);
+        }
     }
 }
