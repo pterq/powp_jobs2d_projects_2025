@@ -81,6 +81,10 @@ public class TestJobs2dApp {
                 new SelectCommandTransformationOptionListener(manager, new ShiftStrategy(15, 0)));
         application.addTest("Shift (down: 15)",
                 new SelectCommandTransformationOptionListener(manager, new ShiftStrategy(0, 15)));
+        application.addTest("Shear (X: 0.5)",
+                new SelectCommandTransformationOptionListener(manager, new ShearStrategy(0.5, 0)));
+        application.addTest("Shear (Y: 0.5)",
+                new SelectCommandTransformationOptionListener(manager, new ShearStrategy(0, 0.5)));
     }
 
     /**
