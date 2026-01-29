@@ -50,15 +50,12 @@ import edu.kis.powp.jobs2d.events.SelectTestFigureOptionListener;
 import edu.kis.powp.jobs2d.events.SelectValidateCanvasBoundsOptionListener;
 import edu.kis.powp.jobs2d.events.SelectZoomInOptionListener;
 import edu.kis.powp.jobs2d.events.SelectZoomOutOptionListener;
-import edu.kis.powp.jobs2d.features.CanvasFeature;
-import edu.kis.powp.jobs2d.features.CommandsFeature;
-import edu.kis.powp.jobs2d.features.DrawerFeature;
-import edu.kis.powp.jobs2d.features.DriverFeature;
-import edu.kis.powp.jobs2d.features.FeatureManager;
-import edu.kis.powp.jobs2d.features.MonitoringDriverConfigurationStrategy;
-import edu.kis.powp.jobs2d.features.MonitoringFeature;
-import edu.kis.powp.jobs2d.features.ViewFeature;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
+import edu.kis.powp.jobs2d.drivers.maintenance.DeviceMaintenancePanel;
+import edu.kis.powp.jobs2d.drivers.maintenance.DeviceUsageMonitor;
+import edu.kis.powp.jobs2d.drivers.maintenance.MaintenanceDriverConfigurationStrategy;
+import edu.kis.powp.jobs2d.drivers.maintenance.UsageTrackingDriverDecorator;
+import edu.kis.powp.jobs2d.features.*;
 
 public class TestJobs2dApp {
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -164,6 +161,22 @@ public class TestJobs2dApp {
                 recordingDriver);
         application.addTest("Stop recording & Load recorded command", selectLoadRecordedCommandOptionListener);
         DriverFeature.addDriver("Recording Driver", recordingDriver);
+
+        // Device maintenance panel
+        DriverConfigurationStrategy defaultStrategy = DriverFeature.getConfigurationStrategy();
+        MaintenanceDriverConfigurationStrategy maintenanceStrategy = new MaintenanceDriverConfigurationStrategy(500, 40);
+        DriverFeature.setConfigurationStrategy(maintenanceStrategy);
+        VisitableJob2dDriver coreDriver = new LineDriverAdapter(DrawerFeature.getDrawerController(), LineFactory.getBasicLine(), "basic");
+        DriverFeature.addDriver("Device Maintenance simulation", coreDriver);
+        UsageTrackingDriverDecorator maintenanceDriver = maintenanceStrategy.getCreatedDecorator();
+        DeviceMaintenancePanel devicePanel = new DeviceMaintenancePanel(
+                e -> maintenanceDriver.refillInk(),
+                e -> maintenanceDriver.performMaintenance()
+        );
+        application.addWindowComponent("Device Maintenance", devicePanel);
+        DeviceUsageMonitor monitor = new DeviceUsageMonitor(devicePanel, 40);
+        maintenanceDriver.addObserver(monitor);
+        DriverFeature.setConfigurationStrategy(defaultStrategy);
 
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
