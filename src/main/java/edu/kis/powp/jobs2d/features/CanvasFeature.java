@@ -1,5 +1,6 @@
 package edu.kis.powp.jobs2d.features;
 
+import edu.kis.powp.jobs2d.canvas.CanvasFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
@@ -73,6 +74,11 @@ public class CanvasFeature implements IFeature {
         canvasOverlay = attachCanvasOverlay(panel);
 
         app.addComponentMenu(CanvasFeature.class, "Canvas");
+        addCanvas("None", null);
+        addCanvas(CanvasFactory.createA4());
+        addCanvas(CanvasFactory.createA3());
+        addCanvas(CanvasFactory.createB4());
+        addCanvas(CanvasFactory.createCircle(200));
     }
 
     public static void addCanvas(ICanvas canvas) {
