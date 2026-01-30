@@ -1,14 +1,12 @@
 package edu.kis.powp.jobs2d.features;
 
-import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
+import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.drivers.UsageTrackingDriverDecorator;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.kis.powp.appbase.Application;
-import edu.kis.powp.jobs2d.drivers.UsageTrackingDriverDecorator;
 
 /**
  * Provides monitoring capabilities for tracked drivers. Users can select drivers
@@ -42,6 +40,7 @@ public class MonitoringFeature implements IFeature {
             (ActionEvent e) -> monitoringEnabled = !monitoringEnabled, true);
         app.addComponentMenuElement(MonitoringFeature.class, "Report usage summary", MonitoringFeature::logUsage);
         app.addComponentMenuElement(MonitoringFeature.class, "Reset counters", MonitoringFeature::resetCounters);
+        setupLoggerMenu(app);
     }
 
     /**
@@ -59,7 +58,7 @@ public class MonitoringFeature implements IFeature {
      *
      * @param application Application context.
      */
-    public static void setupLoggerMenu(Application application) {
+    private static void setupLoggerMenu(Application application) {
 
         application.addComponentMenu(Logger.class, "Logger", 0);
         application.addComponentMenuElement(Logger.class, "Clear log",

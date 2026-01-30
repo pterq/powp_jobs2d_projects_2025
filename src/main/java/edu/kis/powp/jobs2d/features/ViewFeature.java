@@ -1,14 +1,15 @@
 package edu.kis.powp.jobs2d.features;
 
+import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.events.SelectResetViewOptionListener;
+import edu.kis.powp.jobs2d.events.SelectZoomInOptionListener;
+import edu.kis.powp.jobs2d.events.SelectZoomOutOptionListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
-
-import edu.kis.powp.appbase.Application;
 
 /**
  * Feature for managing view transformations (zoom and pan). This feature wraps
@@ -84,9 +85,14 @@ public class ViewFeature implements IFeature {
 
         // Add View menu
         app.addComponentMenu(ViewFeature.class, "View");
-        app.addComponentMenuElement(ViewFeature.class, "Zoom in", (e) -> zoomIn());
-        app.addComponentMenuElement(ViewFeature.class, "Zoom out", (e) -> zoomOut());
-        app.addComponentMenuElement(ViewFeature.class, "Reset", (e) -> resetView());
+        SelectZoomInOptionListener zoomInListener = new SelectZoomInOptionListener();
+        SelectZoomOutOptionListener zoomOutListener = new SelectZoomOutOptionListener();
+        SelectResetViewOptionListener resetViewListener = new SelectResetViewOptionListener();
+
+        application.addComponentMenuElement(ViewFeature.class, "Zoom in", zoomInListener);
+        application.addComponentMenuElement(ViewFeature.class, "Zoom out", zoomOutListener);
+        application.addComponentMenuElement(ViewFeature.class, "Reset", resetViewListener);
+
     }
 
     /**
