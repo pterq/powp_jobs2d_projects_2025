@@ -51,10 +51,6 @@ import edu.kis.powp.jobs2d.events.SelectValidateCanvasBoundsOptionListener;
 import edu.kis.powp.jobs2d.events.SelectZoomInOptionListener;
 import edu.kis.powp.jobs2d.events.SelectZoomOutOptionListener;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
-import edu.kis.powp.jobs2d.drivers.maintenance.DeviceMaintenancePanel;
-import edu.kis.powp.jobs2d.drivers.maintenance.DeviceUsageMonitor;
-import edu.kis.powp.jobs2d.drivers.maintenance.MaintenanceDriverConfigurationStrategy;
-import edu.kis.powp.jobs2d.drivers.maintenance.UsageTrackingDriverDecorator;
 import edu.kis.powp.jobs2d.features.*;
 
 public class TestJobs2dApp {
@@ -163,20 +159,8 @@ public class TestJobs2dApp {
         DriverFeature.addDriver("Recording Driver", recordingDriver);
 
         // Device maintenance panel
-        DriverConfigurationStrategy defaultStrategy = DriverFeature.getConfigurationStrategy();
-        MaintenanceDriverConfigurationStrategy maintenanceStrategy = new MaintenanceDriverConfigurationStrategy(500, 40);
-        DriverFeature.setConfigurationStrategy(maintenanceStrategy);
-        VisitableJob2dDriver coreDriver = new LineDriverAdapter(DrawerFeature.getDrawerController(), LineFactory.getBasicLine(), "basic");
-        DriverFeature.addDriver("Device Maintenance simulation", coreDriver);
-        UsageTrackingDriverDecorator maintenanceDriver = maintenanceStrategy.getCreatedDecorator();
-        DeviceMaintenancePanel devicePanel = new DeviceMaintenancePanel(
-                e -> maintenanceDriver.refillInk(),
-                e -> maintenanceDriver.performMaintenance()
-        );
-        application.addWindowComponent("Device Maintenance", devicePanel);
-        DeviceUsageMonitor monitor = new DeviceUsageMonitor(devicePanel, 40);
-        maintenanceDriver.addObserver(monitor);
-        DriverFeature.setConfigurationStrategy(defaultStrategy);
+        VisitableJob2dDriver driver = new LineDriverAdapter(DrawerFeature.getDrawerController(), LineFactory.getBasicLine(), "basic");
+        MaintenanceFeature.setup(application, driver, 500, 40, 40);
 
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
