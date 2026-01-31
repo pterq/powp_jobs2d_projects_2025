@@ -9,6 +9,7 @@ import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindowObserver;
 import edu.kis.powp.jobs2d.command.gui.SelectImportCommandOptionListener;
 import edu.kis.powp.jobs2d.command.importer.JsonCommandImportParser;
 import edu.kis.powp.jobs2d.command.manager.CommandHistory;
+import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.jobs2d.command.manager.CommandHistorySubscriber;
 import edu.kis.powp.jobs2d.command.manager.DefaultCommandManager;
 import edu.kis.powp.jobs2d.command.manager.LoggerCommandChangeObserver;
