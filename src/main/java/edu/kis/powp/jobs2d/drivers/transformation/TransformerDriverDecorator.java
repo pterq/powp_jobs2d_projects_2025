@@ -5,12 +5,20 @@ import edu.kis.powp.jobs2d.visitor.DriverVisitor;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 
 public class TransformerDriverDecorator implements VisitableJob2dDriver {
-    private final Job2dDriver driver;
+    private final VisitableJob2dDriver driver;
     private final TransformStrategy strategy;
 
-    public TransformerDriverDecorator(Job2dDriver driver, TransformStrategy strategy) {
+    public TransformerDriverDecorator(VisitableJob2dDriver driver, TransformStrategy strategy) {
         this.driver = driver;
         this.strategy = strategy;
+    }
+
+    public VisitableJob2dDriver getDriver() {
+        return driver;
+    }
+
+    public TransformStrategy getStrategy() {
+        return strategy;
     }
 
     @Override

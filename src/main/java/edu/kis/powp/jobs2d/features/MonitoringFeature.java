@@ -1,19 +1,24 @@
 package edu.kis.powp.jobs2d.features;
 
+import edu.kis.powp.jobs2d.drivers.maintenance.DeviceMaintenancePanel;
+import edu.kis.powp.jobs2d.drivers.maintenance.DeviceUsageMonitor;
+import edu.kis.powp.jobs2d.drivers.maintenance.MaintenanceDriverConfigurationStrategy;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.kis.powp.appbase.Application;
-import edu.kis.powp.jobs2d.drivers.UsageTrackingDriverDecorator;
+import edu.kis.powp.jobs2d.drivers.maintenance.UsageTrackingDriverDecorator;
 
 /**
  * Provides monitoring capabilities for tracked drivers. Users can select drivers
  * with monitoring enabled from the driver menu, and use this feature to view
  * usage summaries and reset counters.
  */
-public final class MonitoringFeature {
+public class MonitoringFeature implements IFeature {
 
     /** Holds all registered monitored drivers by their label. */
     private static Map<String, UsageTrackingDriverDecorator> monitoredDrivers = new HashMap<>();
@@ -21,24 +26,26 @@ public final class MonitoringFeature {
     /** Target logger where summaries are printed. */
     private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private MonitoringFeature() {
+    private static boolean monitoringEnabled = true;
+
+    public MonitoringFeature() {
     }
 
-    /**
-     * Sets up the Monitoring menu with actions to report usage and reset counters.
-     * Called once during application startup.
-     *
-     * @param app               The application context.
-     * @param monitoringLogger  Custom logger; if {@code null}, uses the default application logger.
-     */
-    public static void setupMonitoringPlugin(Application app, Logger monitoringLogger) {
-        if (monitoringLogger != null) {
-            logger = monitoringLogger;
+    public MonitoringFeature(Logger customLogger) {
+        if (customLogger != null) {
+            logger = customLogger;
         }
+    }
+
+    @Override
+    public void setup(Application app) {
 
         app.addComponentMenu(MonitoringFeature.class, "Monitoring", 0);
+        app.addComponentMenuElementWithCheckBox(MonitoringFeature.class, "Toggle Monitoring",
+            (ActionEvent e) -> monitoringEnabled = !monitoringEnabled, true);
         app.addComponentMenuElement(MonitoringFeature.class, "Report usage summary", MonitoringFeature::logUsage);
         app.addComponentMenuElement(MonitoringFeature.class, "Reset counters", MonitoringFeature::resetCounters);
+        setupLoggerMenu(app);
     }
 
     /**
@@ -49,6 +56,26 @@ public final class MonitoringFeature {
      */
     public static void registerMonitoredDriver(String label, UsageTrackingDriverDecorator driver) {
         monitoredDrivers.put(label, driver);
+    }
+
+    /**
+     * Setup menu for adjusting logging settings.
+     *
+     * @param application Application context.
+     */
+    private static void setupLoggerMenu(Application application) {
+
+        application.addComponentMenu(Logger.class, "Logger", 0);
+        application.addComponentMenuElement(Logger.class, "Clear log",
+            (ActionEvent e) -> application.flushLoggerOutput());
+        application.addComponentMenuElement(Logger.class, "Fine level", (ActionEvent e) -> logger.setLevel(
+            Level.FINE));
+        application.addComponentMenuElement(Logger.class, "Info level", (ActionEvent e) -> logger.setLevel(Level.INFO));
+        application.addComponentMenuElement(Logger.class, "Warning level",
+            (ActionEvent e) -> logger.setLevel(Level.WARNING));
+        application.addComponentMenuElement(Logger.class, "Severe level",
+            (ActionEvent e) -> logger.setLevel(Level.SEVERE));
+        application.addComponentMenuElement(Logger.class, "OFF logging", (ActionEvent e) -> logger.setLevel(Level.OFF));
     }
 
     /**
@@ -86,5 +113,43 @@ public final class MonitoringFeature {
             driver.reset();
         }
         logger.info("Monitoring: all counters reset");
+    }
+
+    public static boolean isMonitoringEnabled() {
+        return monitoringEnabled;
+    }
+
+    @Override
+    public String getName() {
+        return "Monitoring";
+    }
+
+    /**
+     * Facade method to simplify adding a maintenance-enabled driver .
+     */
+
+    public static void addDriverWithMaintenance(Application application, VisitableJob2dDriver job2dDriver, double maxInkLevel, int maxOperations, int inkThresholdWarning) {
+        // Temporary default strategy change to maintenance strategy
+        DriverConfigurationStrategy defaultStrategy = DriverFeature.getConfigurationStrategy();
+        MaintenanceDriverConfigurationStrategy maintenanceStrategy = new MaintenanceDriverConfigurationStrategy(maxInkLevel, maxOperations);
+
+        DriverFeature.setConfigurationStrategy(maintenanceStrategy);
+
+        String driverName = job2dDriver.toString();
+        DriverFeature.addDriver("Device Maintenance simulation (driver: " + driverName + ")", job2dDriver);
+
+        UsageTrackingDriverDecorator maintenanceDriver = maintenanceStrategy.getCreatedDecorator();
+        DeviceMaintenancePanel devicePanel = new DeviceMaintenancePanel(
+                e -> maintenanceDriver.refillInk(),
+                e -> maintenanceDriver.performMaintenance()
+        );
+
+        application.addWindowComponent("Device Maintenance", devicePanel);
+
+        DeviceUsageMonitor monitor = new DeviceUsageMonitor(devicePanel, inkThresholdWarning);
+        maintenanceDriver.addObserver(monitor);
+
+        // Bring back default strategy
+        DriverFeature.setConfigurationStrategy(defaultStrategy);
     }
 }

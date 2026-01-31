@@ -22,6 +22,18 @@ public class LineDriverAdapter implements VisitableJob2dDriver {
         this.name = name;
     }
 
+    public ILine getLine() {
+        return line;
+    }
+
+    public DrawPanelController getDrawController() {
+        return drawController;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public void setPosition(int x, int y) {
         this.startX = x;

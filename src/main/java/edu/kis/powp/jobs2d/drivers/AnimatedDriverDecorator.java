@@ -28,6 +28,14 @@ public class AnimatedDriverDecorator implements VisitableJob2dDriver {
         this.executionThread.start();
     }
 
+    public VisitableJob2dDriver getTargetDriver() {
+        return targetDriver;
+    }
+
+    public int getDelayMs() {
+        return delayMs;
+    }
+
     @Override
     public void setPosition(int x, int y) {
         queueOperation(() -> targetDriver.setPosition(x, y));
