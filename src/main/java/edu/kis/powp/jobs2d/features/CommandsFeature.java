@@ -9,8 +9,8 @@ import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindowObserver;
 import edu.kis.powp.jobs2d.command.gui.SelectImportCommandOptionListener;
 import edu.kis.powp.jobs2d.command.importer.JsonCommandImportParser;
 import edu.kis.powp.jobs2d.command.manager.CommandHistory;
-import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.jobs2d.command.manager.CommandHistorySubscriber;
+import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.jobs2d.command.manager.DefaultCommandManager;
 import edu.kis.powp.jobs2d.command.manager.LoggerCommandChangeObserver;
 import edu.kis.powp.jobs2d.drivers.transformation.FlipStrategy;
@@ -92,20 +92,21 @@ public class CommandsFeature implements IFeature {
 
     private static void setupWindows(Application application) {
 
-        CommandManagerWindow commandManager = new CommandManagerWindow(CommandsFeature.getDriverCommandManager());
+        CommandManagerWindow commandManagerWindow = new CommandManagerWindow(CommandsFeature.getDriverCommandManager());
         SelectImportCommandOptionListener importListener = new SelectImportCommandOptionListener(
            CommandsFeature.getDriverCommandManager(),
             new JsonCommandImportParser()
         );
-        commandManager.setImportActionListener(importListener);
-        application.addWindowComponent("Command Manager", commandManager);
+        commandManagerWindow.setImportActionListener(importListener);
+        commandManagerWindow.setRunCommandActionListener(new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
+        application.addWindowComponent("Command Manager", commandManagerWindow);
 
         CommandManagerWindowCommandChangeObserver windowObserver = new CommandManagerWindowCommandChangeObserver(
-            commandManager);
+            commandManagerWindow);
         CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(windowObserver);
 
         CommandPreviewWindow commandPreviewWindow = new CommandPreviewWindow();
-        commandManager.setPreviewWindow(commandPreviewWindow);
+        commandManagerWindow.setPreviewWindow(commandPreviewWindow);
         application.addWindowComponent("Command Preview", commandPreviewWindow);
         CommandPreviewWindowObserver previewObserver = new CommandPreviewWindowObserver(
             commandPreviewWindow,
