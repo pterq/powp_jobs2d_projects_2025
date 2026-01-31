@@ -2,76 +2,34 @@ package edu.kis.powp.jobs2d.command.manager;
 
 import java.util.List;
 
-import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
-import edu.kis.powp.jobs2d.command.importer.CommandImportResult;
-import edu.kis.powp.jobs2d.visitor.CommandCounterVisitor;
 import edu.kis.powp.observer.Publisher;
+import edu.kis.powp.observer.Subscriber;
 
 /**
- * Driver command Manager.
+ * Command Manager interface.
  */
-public class CommandManager {
-    private DriverCommand currentCommand = null;
+public interface CommandManager {
+    void setCurrentCommand(DriverCommand commandList);
 
-    private final Publisher changePublisher = new Publisher();
+    void setCurrentCommand(List<DriverCommand> commandList, String name);
 
-    /**
-     * Set current command.
-     * 
-     * @param commandList Set the command as current.
-     */
-    public synchronized void setCurrentCommand(DriverCommand commandList) {
-        this.currentCommand = commandList;
-        changePublisher.notifyObservers();
-    }
+    void importCurrentCommandFromText(String text, CommandImportParser parser);
 
-    /**
-     * Set current command.
-     * 
-     * @param commandList list of commands representing a compound command.
-     * @param name        name of the command.
-     */
-    public synchronized void setCurrentCommand(List<DriverCommand> commandList, String name) {
-        CompoundCommand compoundCommand = CompoundCommand.fromListOfCommands(commandList, name);
-        setCurrentCommand(compoundCommand);
-    }
+    DriverCommand getCurrentCommand();
 
-    public synchronized void importCurrentCommandFromText(String text, CommandImportParser parser) {
-        CommandImportResult result = parser.parse(text);
-        setCurrentCommand(result.getCommands(), result.getName());
-    }
+    void clearCurrentCommand();
 
-    /**
-     * Return current command.
-     * 
-     * @return Current command.
-     */
-    public synchronized DriverCommand getCurrentCommand() {
-        return currentCommand;
-    }
+    void addSubscriber(Subscriber subscriber);
 
-    public synchronized void clearCurrentCommand() {
-        currentCommand = null;
-        changePublisher.notifyObservers();
-    }
+    List<Subscriber> getSubscribers();
 
-    public synchronized String getCurrentCommandString() {
-        if (getCurrentCommand() == null) {
-            return "No command loaded";
-        } else {
-            CommandCounterVisitor.CommandStats stats = CommandCounterVisitor.countCommands(getCurrentCommand());
-            StringBuilder sb = new StringBuilder(getCurrentCommand().toString());
-            sb.append("\n\nStats:\n");
-            sb.append("Total commands: ").append(stats.getCount()).append("\n");
-            sb.append("OperateTo count: ").append(stats.getOperateToCount()).append("\n");
-            sb.append("SetPosition count: ").append(stats.getSetPositionCount()).append("\n");
-            return sb.toString();
-        }
-    }
+    void deleteObservers();
 
-    public Publisher getChangePublisher() {
-        return changePublisher;
-    }
+    void resetObservers();
+
+    String getCurrentCommandString();
+
+    Publisher getChangePublisher();
 }

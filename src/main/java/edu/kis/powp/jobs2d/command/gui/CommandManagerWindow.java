@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -21,12 +22,11 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
     private JTextArea currentCommandField;
     private JButton btnImportCommand;
+    private JButton btnClearObservers;
+    private JButton btnRunCommand;
     private String observerListString;
     private JTextArea observerListField;
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 9204679248304669948L;
 
     public CommandManagerWindow(CommandManager commandManager) {
@@ -57,6 +57,13 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         content.add(currentCommandField, c);
         updateCurrentCommandField();
 
+        btnRunCommand = new JButton("Run command");
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 1;
+        content.add(btnRunCommand, c);
+
         JButton btnClearCommand = new JButton("Clear command");
         btnClearCommand.addActionListener((ActionEvent e) -> this.clearCommand());
         c.fill = GridBagConstraints.BOTH;
@@ -65,7 +72,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.weighty = 1;
         content.add(btnClearCommand, c);
 
-        JButton btnClearObservers = new JButton("Delete observers");
+        btnClearObservers = new JButton("Delete observers");
         btnClearObservers.addActionListener((ActionEvent e) -> this.deleteObservers());
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
@@ -99,13 +106,19 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     }
 
     public void deleteObservers() {
-        commandManager.getChangePublisher().clearObservers();
+        if (btnClearObservers.getText().equals("Delete observers")) {
+            commandManager.deleteObservers();
+            btnClearObservers.setText("Reset observers");
+        } else {
+            commandManager.resetObservers();
+            btnClearObservers.setText("Delete observers");
+        }
         this.updateObserverListField();
     }
 
     public void updateObserverListField() {
         observerListString = "";
-        List<Subscriber> commandChangeSubscribers = commandManager.getChangePublisher().getSubscribers();
+        List<Subscriber> commandChangeSubscribers = commandManager.getSubscribers();
         for (Subscriber observer : commandChangeSubscribers) {
             observerListString += observer.toString() + System.lineSeparator();
         }
@@ -125,8 +138,12 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         }
     }
 
-    public void setImportActionListener(java.awt.event.ActionListener actionListener) {
+    public void setImportActionListener(ActionListener actionListener) {
         btnImportCommand.addActionListener(actionListener);
+    }
+
+    public void setRunCommandActionListener(ActionListener actionListener) {
+        btnRunCommand.addActionListener(actionListener);
     }
 
     public void setPreviewWindow(CommandPreviewWindow commandPreviewWindow) {

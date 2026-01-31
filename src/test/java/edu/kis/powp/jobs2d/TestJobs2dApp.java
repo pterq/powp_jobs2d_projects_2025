@@ -1,6 +1,7 @@
 package edu.kis.powp.jobs2d;
 
 import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.jobs2d.events.CanvasMouseListener;
 import edu.kis.powp.jobs2d.events.SelectCountCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectCountDriverOptionListener;
@@ -34,11 +35,14 @@ public class TestJobs2dApp {
         SelectTestFigure2OptionListener selectTestFigure2OptionListener = new SelectTestFigure2OptionListener(
                 DriverFeature.getDriverManager());
         SelectTestCompoundCommandOptionListener selectTestCompoundCommandOptionListener = new SelectTestCompoundCommandOptionListener();
+        
+        CommandManager commandManager = CommandsFeature.getDriverCommandManager();
         SelectCountCommandOptionListener selectCountCommandOptionListener = new SelectCountCommandOptionListener(
-                CommandsFeature.getDriverCommandManager());
+                commandManager);
+        
         SelectCountDriverOptionListener selectCountDriverOptionListener = new SelectCountDriverOptionListener();
         SelectValidateCanvasBoundsOptionListener selectValidateCanvasBoundsOptionListener = new SelectValidateCanvasBoundsOptionListener(
-                CommandsFeature.getDriverCommandManager(), logger);
+                commandManager, logger);
 
         application.addTest("Figure Joe 1", selectTestFigureOptionListener);
         application.addTest("Figure Joe 2", selectTestFigure2OptionListener);
