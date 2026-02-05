@@ -1,7 +1,7 @@
 package edu.kis.powp.jobs2d.drivers.extension;
 
-import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 import edu.kis.powp.jobs2d.drivers.transformation.DriverFeatureFactory;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 
 /**
  * Transformation extension - applies rotation, scale, or flip.
@@ -11,7 +11,7 @@ public class TransformationExtension implements IDriverExtension {
     private int rotationDegrees;
     private double scale;
     private boolean flipH, flipV;
-    private boolean enabled = true;
+    private boolean enabled = false;
     private Type type;
 
     public enum Type {
@@ -47,8 +47,9 @@ public class TransformationExtension implements IDriverExtension {
 
     @Override
     public VisitableJob2dDriver apply(VisitableJob2dDriver driver) {
-        if (!enabled) return driver;
-        
+        if (!enabled)
+            return driver;
+
         if (type == Type.ROTATE) {
             return DriverFeatureFactory.createRotateDriver(driver, rotationDegrees);
         } else if (type == Type.SCALE) {

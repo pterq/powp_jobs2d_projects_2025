@@ -1,8 +1,9 @@
 package edu.kis.powp.jobs2d.drivers.extension;
 
-import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
-import edu.kis.powp.jobs2d.drivers.LoggerDriver;
 import java.util.logging.Logger;
+
+import edu.kis.powp.jobs2d.drivers.LoggerDriver;
+import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
 
 /**
  * Extension that wraps driver with a LoggerDriver decorator.
@@ -40,7 +41,8 @@ public class LoggerExtension implements IDriverExtension {
     }
 
     /**
-     * Inner class: LoggerDriver decorator that logs operations and delegates to wrapped driver.
+     * Inner class: LoggerDriver decorator that logs operations and delegates to
+     * wrapped driver.
      */
     private static class LoggerDriverDecorator extends LoggerDriver {
         private final VisitableJob2dDriver targetDriver;
@@ -61,6 +63,11 @@ public class LoggerExtension implements IDriverExtension {
             super.setPosition(x, y);
             targetDriver.setPosition(x, y);
         }
+
+        @Override
+        public String toString() {
+            return targetDriver.toString() + " [" + super.toString() + "]";
+        }
+
     }
 }
-
