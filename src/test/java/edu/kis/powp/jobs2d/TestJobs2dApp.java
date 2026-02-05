@@ -77,6 +77,7 @@ public class TestJobs2dApp {
                 featureManager.registerFeature(new CanvasFeature());
                 featureManager.registerFeature(new CommandsFeature());
                 featureManager.registerFeature(new DriverFeature(logger));
+                featureManager.registerFeature(new DriverExtensionFeature());
                 featureManager.registerFeature(new MonitoringFeature(logger));
                 featureManager.setupAll();
 
