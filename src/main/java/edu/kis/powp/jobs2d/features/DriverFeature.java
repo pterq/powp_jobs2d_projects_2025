@@ -11,6 +11,7 @@ import edu.kis.powp.jobs2d.drivers.LoggerDriver;
 import edu.kis.powp.jobs2d.drivers.RecordingDriverDecorator;
 import edu.kis.powp.jobs2d.drivers.SelectDriverMenuOptionListener;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
+import edu.kis.powp.jobs2d.drivers.extension.IDriverExtension;
 import edu.kis.powp.jobs2d.drivers.strategy.OnCanvasExceededLogWarning;
 import edu.kis.powp.jobs2d.drivers.strategy.OnCanvasExceededStrategy;
 import edu.kis.powp.jobs2d.drivers.transformation.DriverFeatureFactory;
@@ -70,10 +71,20 @@ public class DriverFeature implements IFeature {
     }
 
     /**
-     * Update driver info.
+     * Update driver info with current driver name and enabled extensions.
      */
     public static void updateDriverInfo() {
-        app.updateInfo(driverManager.getCurrentDriver().toString());
+        String driverName = driverManager.getCurrentDriver().toString();
+        
+        // Add enabled extensions to the info string
+        StringBuilder info = new StringBuilder(driverName);
+        for (edu.kis.powp.jobs2d.drivers.extension.IDriverExtension ext : driverManager.getExtensionManager().getExtensions()) {
+            if (ext.isEnabled()) {
+                info.append(" [").append(ext.getName()).append("]");
+            }
+        }
+        
+        app.updateInfo(info.toString());
     }
 
     public static void setConfigurationStrategy(DriverConfigurationStrategy strategy) {
@@ -97,9 +108,6 @@ public class DriverFeature implements IFeature {
     public static void setupDefaultDrivers(Application application, Logger logger) {
         DriverFeature.setConfigurationStrategy(new MonitoringDriverConfigurationStrategy());
 
-        VisitableJob2dDriver loggerDriver = new LoggerDriver(logger);
-        DriverFeature.addDriver("Logger driver", loggerDriver);
-
         DrawPanelController drawerController = DrawerFeature.getDrawerController();
         VisitableJob2dDriver basicLineDriver = new LineDriverAdapter(drawerController, LineFactory.getBasicLine(), "basic");
         DriverFeature.addDriver("Basic line Simulator", basicLineDriver);
@@ -119,12 +127,6 @@ public class DriverFeature implements IFeature {
         VisitableJob2dDriver specialLineDriver = new LineDriverAdapter(drawerController, LineFactory.getSpecialLine(), "special");
         DriverFeature.addDriver("Special line Simulator", specialLineDriver);
 
-        VisitableJob2dDriver basicLineWithLoggerDriver = new DriverComposite(Arrays.asList(basicLineDriver, loggerDriver));
-        DriverFeature.addDriver("Logger + Basic line", basicLineWithLoggerDriver);
-
-        VisitableJob2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
-        DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
-
         RecordingDriverDecorator recordingDriver = new RecordingDriverDecorator(basicLineDriver);
         SelectLoadRecordedCommandOptionListener selectLoadRecordedCommandOptionListener = new SelectLoadRecordedCommandOptionListener(recordingDriver);
         application.addTest("Stop recording & Load recorded command", selectLoadRecordedCommandOptionListener);
@@ -132,14 +134,6 @@ public class DriverFeature implements IFeature {
 
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
-        VisitableJob2dDriver rotatedDriver = DriverFeatureFactory.createRotateDriver(basicLineDriver, 45);
-        DriverFeature.addDriver("Basic Line + Rotate 45", rotatedDriver);
-
-        VisitableJob2dDriver scaledDriver = DriverFeatureFactory.createScaleDriver(basicLineDriver, 2.0);
-        DriverFeature.addDriver("Basic Line + Scale 2x", scaledDriver);
-
-        VisitableJob2dDriver flippedDriver = DriverFeatureFactory.createFlipDriver(basicLineDriver, true, false);
-        DriverFeature.addDriver("Basic Line + Flip Horizontal", flippedDriver);
 
         OnCanvasExceededStrategy onCanvasExceededStrategy = new OnCanvasExceededLogWarning();
         CanvasLimitedDriverDecorator canvasLimitedDriver = new CanvasLimitedDriverDecorator(basicLineDriver,

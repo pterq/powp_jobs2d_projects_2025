@@ -5,9 +5,10 @@ import edu.kis.powp.jobs2d.drivers.DriverManager;
 import edu.kis.powp.jobs2d.drivers.extension.DriverExtensionManager;
 import edu.kis.powp.jobs2d.drivers.extension.IDriverExtension;
 import edu.kis.powp.jobs2d.drivers.extension.TransformationExtension;
+import edu.kis.powp.jobs2d.drivers.extension.LoggerExtension;
 
 import javax.swing.*;
-import java.awt.*;
+import java.util.logging.Logger;
 
 /**
  * Feature for managing driver extensions through UI.
@@ -34,6 +35,7 @@ public class DriverExtensionFeature implements IFeature {
         extensionManager.registerExtension(TransformationExtension.createRotation(90));
         extensionManager.registerExtension(TransformationExtension.createScale(2.0));
         extensionManager.registerExtension(TransformationExtension.createFlip(true, false));
+        extensionManager.registerExtension(new LoggerExtension(Logger.getLogger(Logger.GLOBAL_LOGGER_NAME)));
 
         // Create UI frame
         extensionFrame = new JFrame("Driver Extensions");
@@ -63,3 +65,4 @@ public class DriverExtensionFeature implements IFeature {
                 e -> extensionFrame.setVisible(true));
     }
 }
+
