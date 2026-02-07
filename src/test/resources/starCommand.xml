@@ -1,0 +1,13 @@
+<commands name="Star">
+    <setPosition x="0" y="50" />
+    <operateTo x="20" y="-50" />
+    <operateTo x="80" y="-50" />
+    <operateTo x="30" y="-90" />
+    <operateTo x="50" y="-150" />
+    <operateTo x="0" y="-110" />
+    <operateTo x="-50" y="-150" />
+    <operateTo x="-30" y="-90" />
+    <operateTo x="-80" y="-50" />
+    <operateTo x="-20" y="-50" />
+    <operateTo x="0" y="50" />
+</commands>

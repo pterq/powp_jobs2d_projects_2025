@@ -1,0 +1,9 @@
+name,Stairs
+setPosition,0,0
+operateTo,20,0
+operateTo,20,-20
+operateTo,40,-20
+operateTo,40,-40
+operateTo,60,-40
+operateTo,60,-60
+operateTo,80,-60

@@ -1,0 +1,13 @@
+name,Umbrella
+setPosition,0,0
+operateTo,60,0
+operateTo,50,-25
+operateTo,25,-45
+operateTo,0,-50
+operateTo,-25,-45
+operateTo,-50,-25
+operateTo,-60,0
+operateTo,0,0
+operateTo,0,80
+operateTo,10,95
+operateTo,0,110

@@ -7,7 +7,10 @@ import edu.kis.powp.jobs2d.command.gui.CommandManagerWindowCommandChangeObserver
 import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindow;
 import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindowObserver;
 import edu.kis.powp.jobs2d.command.gui.SelectImportCommandOptionListener;
-import edu.kis.powp.jobs2d.command.importer.JsonCommandImportParser;
+import edu.kis.powp.jobs2d.command.gui.SelectImportCommandFromTextOptionListener;
+import edu.kis.powp.jobs2d.command.gui.SelectSaveCommandToFileOptionListener;
+import edu.kis.powp.jobs2d.command.importer.CommandExportFormatter;
+import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
 import edu.kis.powp.jobs2d.command.manager.CommandHistory;
 import edu.kis.powp.jobs2d.command.manager.CommandHistorySubscriber;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
@@ -93,11 +96,23 @@ public class CommandsFeature implements IFeature {
     private static void setupWindows(Application application) {
 
         CommandManagerWindow commandManagerWindow = new CommandManagerWindow(CommandsFeature.getDriverCommandManager());
+        CommandImportParserSelector parserSelector = new CommandImportParserSelector();
         SelectImportCommandOptionListener importListener = new SelectImportCommandOptionListener(
-           CommandsFeature.getDriverCommandManager(),
-            new JsonCommandImportParser()
-        );
+            CommandsFeature.getDriverCommandManager(),
+            parserSelector,
+            commandManagerWindow);
+        SelectImportCommandFromTextOptionListener importFromTextListener = new SelectImportCommandFromTextOptionListener(
+            CommandsFeature.getDriverCommandManager(),
+            parserSelector,
+            commandManagerWindow);
+        SelectSaveCommandToFileOptionListener saveToFileListener = new SelectSaveCommandToFileOptionListener(
+            CommandsFeature.getDriverCommandManager(),
+            commandManagerWindow,
+            parserSelector,
+            new CommandExportFormatter());
         commandManagerWindow.setImportActionListener(importListener);
+        commandManagerWindow.setApplyTextActionListener(importFromTextListener);
+        commandManagerWindow.setSaveTextActionListener(saveToFileListener);
         commandManagerWindow.setRunCommandActionListener(new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
         application.addWindowComponent("Command Manager", commandManagerWindow);
 

@@ -9,6 +9,10 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import java.io.File;
+
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import edu.kis.powp.appbase.gui.WindowComponent;
@@ -21,17 +25,22 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     private CommandPreviewWindow commandPreviewWindow;
 
     private JTextArea currentCommandField;
+    private JTextArea importedCommandField;
     private JButton btnImportCommand;
+    private JButton btnApplyTextCommand;
+    private JButton btnSaveTextCommand;
     private JButton btnClearObservers;
     private JButton btnRunCommand;
     private String observerListString;
     private JTextArea observerListField;
+    private String lastImportedExtension;
+    private File lastImportedFile;
 
     private static final long serialVersionUID = 9204679248304669948L;
 
     public CommandManagerWindow(CommandManager commandManager) {
         this.setTitle("Command Manager");
-        this.setSize(400, 400);
+        this.setSize(700, 700);
         Container content = this.getContentPane();
         content.setLayout(new GridBagLayout());
 
@@ -39,29 +48,46 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
         GridBagConstraints c = new GridBagConstraints();
 
-        observerListField = new JTextArea("");
+        observerListField = new JTextArea(4, 40);
         observerListField.setEditable(false);
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0.4;
         content.add(observerListField, c);
         updateObserverListField();
 
-        currentCommandField = new JTextArea("");
+        currentCommandField = new JTextArea(6, 40);
         currentCommandField.setEditable(false);
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0.7;
         content.add(currentCommandField, c);
         updateCurrentCommandField();
+
+        JLabel importedLabel = new JLabel("Command text (editable):");
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 0;
+        content.add(importedLabel, c);
+
+        importedCommandField = new JTextArea(12, 40);
+        importedCommandField.setLineWrap(true);
+        importedCommandField.setWrapStyleWord(true);
+        JScrollPane importedScroll = new JScrollPane(importedCommandField);
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 2.0;
+        content.add(importedScroll, c);
 
         btnRunCommand = new JButton("Run command");
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0;
         content.add(btnRunCommand, c);
 
         JButton btnClearCommand = new JButton("Clear command");
@@ -69,7 +95,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0;
         content.add(btnClearCommand, c);
 
         btnClearObservers = new JButton("Delete observers");
@@ -77,7 +103,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0;
         content.add(btnClearObservers, c);
 
         JButton btnEditCommand = new JButton("Edit command");
@@ -85,20 +111,37 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0;
         content.add(btnEditCommand, c);
 
-        btnImportCommand = new JButton("Import JSON");
+        btnImportCommand = new JButton("Import Command");
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.gridx = 0;
-        c.weighty = 1;
+        c.weighty = 0;
         content.add(btnImportCommand, c);
+
+        btnApplyTextCommand = new JButton("Apply text");
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 0;
+        content.add(btnApplyTextCommand, c);
+
+        btnSaveTextCommand = new JButton("Save command");
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 0;
+        content.add(btnSaveTextCommand, c);
     }
 
     private void clearCommand() {
         commandManager.clearCurrentCommand();
         updateCurrentCommandField();
+        importedCommandField.setText("");
+        lastImportedExtension = null;
+        lastImportedFile = null;
     }
 
     public void updateCurrentCommandField() {
@@ -142,6 +185,14 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         btnImportCommand.addActionListener(actionListener);
     }
 
+    public void setApplyTextActionListener(ActionListener actionListener) {
+        btnApplyTextCommand.addActionListener(actionListener);
+    }
+
+    public void setSaveTextActionListener(ActionListener actionListener) {
+        btnSaveTextCommand.addActionListener(actionListener);
+    }
+
     public void setRunCommandActionListener(ActionListener actionListener) {
         btnRunCommand.addActionListener(actionListener);
     }
@@ -150,4 +201,22 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         this.commandPreviewWindow = commandPreviewWindow;
     }
 
+    public void setImportedCommandText(String text, String extension, File file) {
+        importedCommandField.setText(text);
+        importedCommandField.setCaretPosition(0);
+        lastImportedExtension = extension;
+        lastImportedFile = file;
+    }
+
+    public String getImportedCommandText() {
+        return importedCommandField.getText();
+    }
+
+    public String getLastImportedExtension() {
+        return lastImportedExtension;
+    }
+
+    public File getLastImportedFile() {
+        return lastImportedFile;
+    }
 }
