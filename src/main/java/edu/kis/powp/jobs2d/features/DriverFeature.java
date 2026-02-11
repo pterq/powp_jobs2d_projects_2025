@@ -131,7 +131,7 @@ public class DriverFeature implements IFeature {
                 onCanvasExceededStrategy);
         DriverFeature.addDriver("Canvas-Limited Driver", canvasLimitedDriver);
 
-        DriverFeature.updateDriverInfo();
+
     }
 
 }

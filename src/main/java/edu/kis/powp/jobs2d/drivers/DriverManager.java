@@ -54,7 +54,7 @@ public class DriverManager {
     }
 
     private synchronized void updateCurrentDriver() {
-        currentDriver = extensionManager.applyExtensions(baseDriver);
+        this.currentDriver = extensionManager.applyExtensions(baseDriver);
         changePublisher.notifyObservers();
     }
 
