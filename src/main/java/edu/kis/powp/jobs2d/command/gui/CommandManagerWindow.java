@@ -31,6 +31,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     private JButton btnSaveTextCommand;
     private JButton btnClearObservers;
     private JButton btnRunCommand;
+    private JButton btnDuplicateCommand;
     private String observerListString;
     private JTextArea observerListField;
     private String lastImportedExtension;
@@ -89,6 +90,13 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.gridx = 0;
         c.weighty = 0;
         content.add(btnRunCommand, c);
+
+        btnDuplicateCommand = new JButton("Duplicate command (deep copy)");
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 0;
+        content.add(btnDuplicateCommand, c);
 
         JButton btnClearCommand = new JButton("Clear command");
         btnClearCommand.addActionListener((ActionEvent e) -> this.clearCommand());
@@ -195,6 +203,10 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
     public void setRunCommandActionListener(ActionListener actionListener) {
         btnRunCommand.addActionListener(actionListener);
+    }
+
+    public void setDuplicateCommandActionListener(ActionListener actionListener) {
+        btnDuplicateCommand.addActionListener(actionListener);
     }
 
     public void setPreviewWindow(CommandPreviewWindow commandPreviewWindow) {

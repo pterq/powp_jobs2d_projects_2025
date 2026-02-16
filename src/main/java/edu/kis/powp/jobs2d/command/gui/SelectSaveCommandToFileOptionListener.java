@@ -34,8 +34,8 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        File target = commandManagerWindow.getLastImportedFile();
-        if (target == null) {
+        File original = commandManagerWindow.getLastImportedFile();
+        if (original == null) {
             JOptionPane.showMessageDialog(null, "No imported file to overwrite.", "Save Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -54,10 +54,12 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
 
         try {
             CommandImportResult result = parser.parse(text);
-            String extension = getExtension(target.getName());
+            String extension = getExtension(original.getName());
             if (extension == null) {
                 extension = commandManagerWindow.getLastImportedExtension();
             }
+
+            File target = createCopyTarget(original);
 
             if ("csv".equalsIgnoreCase(extension) || "txt".equalsIgnoreCase(extension)) {
                 String cleaned = cleanCsvText(text);
@@ -66,6 +68,7 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
             } else {
                 String output = exportFormatter.format(result, extension);
                 Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
+                commandManagerWindow.setImportedCommandText(output, extension, target);
             }
 
             commandManager.setCurrentCommand(result.getCommands(), result.getName());
@@ -81,6 +84,22 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
             return null;
         }
         return fileName.substring(dotIndex + 1);
+    }
+
+    private File createCopyTarget(File original) {
+        String name = original.getName();
+        int dotIndex = name.lastIndexOf('.');
+        String base = dotIndex > 0 ? name.substring(0, dotIndex) : name;
+        String ext = dotIndex > 0 ? name.substring(dotIndex) : "";
+
+        File parent = original.getParentFile();
+        File candidate = new File(parent, base + "_copy" + ext);
+        int counter = 2;
+        while (candidate.exists()) {
+            candidate = new File(parent, base + "_copy" + counter + ext);
+            counter++;
+        }
+        return candidate;
     }
 
     private String cleanCsvText(String text) {
