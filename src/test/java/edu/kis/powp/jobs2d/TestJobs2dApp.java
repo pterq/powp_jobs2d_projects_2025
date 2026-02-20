@@ -1,9 +1,13 @@
 package edu.kis.powp.jobs2d;
 
 import java.awt.EventQueue;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.command.CommandFactory;
+import edu.kis.powp.jobs2d.command.DriverCommand;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.jobs2d.events.CanvasMouseListener;
 import edu.kis.powp.jobs2d.events.SelectCountCommandOptionListener;
@@ -63,6 +67,48 @@ public class TestJobs2dApp {
         application.addTest("Load secret command", new SelectLoadSecretCommandOptionListener());
     }
 
+
+    /**
+     * Setup test using command factory in context.
+     *
+     * @param application Application context.
+     */
+    private static void setupCommandFactoryTest(Application application) {
+        CommandManager commandManager = CommandsFeature.getDriverCommandManager();
+        CommandFactory commandFactory = new CommandFactory();
+
+        System.out.println("Available commands: " + commandFactory.getAvailableCommands());
+
+        //createSetPosition test
+        commandFactory.registerCommand("Home", () -> commandFactory.createSetPosition(0, 0));
+        System.out.println("Available commands: " + commandFactory.getAvailableCommands());
+
+        commandManager.setCurrentCommand(commandFactory.createCommand("Home"));
+
+        //createOperateTo test
+        commandFactory.registerCommand("DrawTo10_10", () -> commandFactory.createOperateTo(10, 10));
+        System.out.println("Available commands: " + commandFactory.getAvailableCommands());
+
+        commandManager.setCurrentCommand(commandFactory.createCommand("DrawTo10_10"));
+
+
+        //CompoundCommand test
+        List<DriverCommand> compoundCommands = Arrays.asList(
+                commandFactory.createSetPosition(0, 0),
+                commandFactory.createOperateTo(50, 0),
+                commandFactory.createOperateTo(0, 50),
+                commandFactory.createOperateTo(0, 0)
+        );
+
+        DriverCommand compound = commandFactory.createCompoundCommand(compoundCommands, "Triangle");
+        commandFactory.registerCommand("Triangle", () -> compound);
+
+        System.out.println("Available commands: " + commandFactory.getAvailableCommands());
+
+        commandManager.setCurrentCommand(commandFactory.createCommand("Triangle"));
+
+    }
+
     /**
      * Launch the application.
      */
@@ -84,6 +130,7 @@ public class TestJobs2dApp {
 
                 setupPresetTests(app);
                 setupCommandTests(app);
+                setupCommandFactoryTest(app);
 
                 app.setVisibility(true);
             }
