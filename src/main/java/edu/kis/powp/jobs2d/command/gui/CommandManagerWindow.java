@@ -36,6 +36,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     private JTextArea observerListField;
     private String lastImportedExtension;
     private File lastImportedFile;
+    private String lastImportedRawText;
 
     private static final long serialVersionUID = 9204679248304669948L;
 
@@ -220,6 +221,11 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         lastImportedFile = file;
     }
 
+    public void setImportedCommandTextFromFile(String text, String extension, File file) {
+        setImportedCommandText(text, extension, file);
+        lastImportedRawText = text;
+    }
+
     public String getImportedCommandText() {
         return importedCommandField.getText();
     }
@@ -230,5 +236,9 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
     public File getLastImportedFile() {
         return lastImportedFile;
+    }
+
+    public String getLastImportedRawText() {
+        return lastImportedRawText;
     }
 }

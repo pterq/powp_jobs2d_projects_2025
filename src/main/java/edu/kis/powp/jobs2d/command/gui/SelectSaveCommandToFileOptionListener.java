@@ -8,6 +8,7 @@ import java.nio.file.Files;
 
 import javax.swing.JOptionPane;
 
+import edu.kis.powp.jobs2d.command.importer.CommandCopyFormatter;
 import edu.kis.powp.jobs2d.command.importer.CommandExportFormatter;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
@@ -20,6 +21,7 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
     private final CommandManagerWindow commandManagerWindow;
     private final CommandImportParserSelector parserSelector;
     private final CommandExportFormatter exportFormatter;
+    private final CommandCopyFormatter copyFormatter;
 
     public SelectSaveCommandToFileOptionListener(
             CommandManager commandManager,
@@ -30,6 +32,7 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
         this.commandManagerWindow = commandManagerWindow;
         this.parserSelector = parserSelector;
         this.exportFormatter = exportFormatter;
+        this.copyFormatter = new CommandCopyFormatter(exportFormatter);
     }
 
     @Override
@@ -61,15 +64,16 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
 
             File target = createCopyTarget(original);
 
-            if ("csv".equalsIgnoreCase(extension) || "txt".equalsIgnoreCase(extension)) {
-                String cleaned = cleanCsvText(text);
-                Files.write(target.toPath(), cleaned.getBytes(StandardCharsets.UTF_8));
-                commandManagerWindow.setImportedCommandText(cleaned, extension, target);
-            } else {
-                String output = exportFormatter.format(result, extension);
-                Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
-                commandManagerWindow.setImportedCommandText(output, extension, target);
+            String output = text;
+            if ("json".equalsIgnoreCase(extension)) {
+                String raw = commandManagerWindow.getLastImportedRawText();
+                if (raw != null && !raw.trim().isEmpty()) {
+                    output = raw;
+                }
             }
+            output = copyFormatter.formatCopy(result, extension, output);
+            Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
+            commandManagerWindow.setImportedCommandText(output, extension, target);
 
             commandManager.setCurrentCommand(result.getCommands(), result.getName());
             JOptionPane.showMessageDialog(null, "Command saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -102,23 +106,4 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
         return candidate;
     }
 
-    private String cleanCsvText(String text) {
-        String normalized = text.replace("\r\n", "\n").replace("\r", "\n");
-        StringBuilder cleaned = new StringBuilder();
-        String[] lines = normalized.split("\n", -1);
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-            if (trimmed.matches("\\d+")) {
-                continue;
-            }
-            cleaned.append(trimmed).append("\n");
-        }
-        if (cleaned.length() == 0) {
-            return "";
-        }
-        return cleaned.toString();
-    }
 }
