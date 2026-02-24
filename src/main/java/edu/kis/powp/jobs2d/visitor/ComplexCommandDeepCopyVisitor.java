@@ -6,7 +6,7 @@ import edu.kis.powp.jobs2d.command.OperateToCommand;
 import edu.kis.powp.jobs2d.command.SetPositionCommand;
 
 /**
- * Backward-compatible deep copy visitor for complex (compound) commands.
+ * Deep copy visitor for complex (compound) commands.
  */
 public class ComplexCommandDeepCopyVisitor implements CommandVisitor {
 

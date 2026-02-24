@@ -8,7 +8,6 @@ import javax.swing.JOptionPane;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
 import edu.kis.powp.jobs2d.command.importer.CommandImportResult;
-import edu.kis.powp.jobs2d.command.importer.CommandImportTextFormatter;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 
 public class SelectImportCommandFromTextOptionListener implements ActionListener {
@@ -42,13 +41,12 @@ public class SelectImportCommandFromTextOptionListener implements ActionListener
         try {
             CommandImportResult result = parser.parse(text);
             commandManager.setCurrentCommand(result.getCommands(), result.getName());
-            CommandImportTextFormatter formatter = new CommandImportTextFormatter();
             String extension = commandManagerWindow.getLastImportedExtension();
             if (extension == null) {
                 extension = "csv";
             }
-            commandManagerWindow.setImportedCommandText(
-                formatter.format(result),
+            commandManagerWindow.setImportedCommandTextFromFile(
+                text,
                 extension,
                 commandManagerWindow.getLastImportedFile());
             JOptionPane.showMessageDialog(null, "Command imported successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);

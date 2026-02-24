@@ -13,7 +13,6 @@ import edu.kis.powp.jobs2d.command.importer.CommandExportFormatter;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
 import edu.kis.powp.jobs2d.command.importer.CommandImportResult;
-import edu.kis.powp.jobs2d.command.importer.CommandImportTextFormatter;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 
 public class SelectSaveCommandToFileOptionListener implements ActionListener {
@@ -63,17 +62,9 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
             }
 
             File target = createCopyTarget(original);
-
-            String output = text;
-            if ("json".equalsIgnoreCase(extension)) {
-                String raw = commandManagerWindow.getLastImportedRawText();
-                if (raw != null && !raw.trim().isEmpty()) {
-                    output = raw;
-                }
-            }
-            output = copyFormatter.formatCopy(result, extension, output);
+            String output = copyFormatter.formatCopy(result, extension, text);
             Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
-            commandManagerWindow.setImportedCommandText(output, extension, target);
+            commandManagerWindow.setImportedCommandTextFromFile(output, extension, target);
 
             commandManager.setCurrentCommand(result.getCommands(), result.getName());
             JOptionPane.showMessageDialog(null, "Command saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
