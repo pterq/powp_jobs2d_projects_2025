@@ -22,6 +22,7 @@ import edu.kis.powp.jobs2d.drivers.transformation.ScaleStrategy;
 import edu.kis.powp.jobs2d.drivers.transformation.ShearStrategy;
 import edu.kis.powp.jobs2d.drivers.transformation.ShiftStrategy;
 import edu.kis.powp.jobs2d.events.SelectCommandTransformationOptionListener;
+import edu.kis.powp.jobs2d.events.SelectDuplicateCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentFlippedCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentRotatedCommandOptionListener;
@@ -78,6 +79,8 @@ public class CommandsFeature implements IFeature {
             new SelectRunCurrentScaledDownCommandOptionListener());
 
         CommandManager manager = CommandsFeature.getDriverCommandManager();
+        application.addComponentMenuElement(CommandsFeature.class, "Duplicate command (deep copy)",
+            new SelectDuplicateCommandOptionListener(manager));
         application.addComponentMenuElement(CommandsFeature.class, "Scale x2", new SelectCommandTransformationOptionListener(manager, new ScaleStrategy(2)));
         application.addComponentMenuElement(CommandsFeature.class,"Rotate 90 degrees",
             new SelectCommandTransformationOptionListener(manager, new RotateStrategy(90)));
@@ -110,10 +113,13 @@ public class CommandsFeature implements IFeature {
             commandManagerWindow,
             parserSelector,
             new CommandExportFormatter());
+        SelectDuplicateCommandOptionListener duplicateListener = new SelectDuplicateCommandOptionListener(
+            CommandsFeature.getDriverCommandManager());
         commandManagerWindow.setImportActionListener(importListener);
         commandManagerWindow.setApplyTextActionListener(importFromTextListener);
         commandManagerWindow.setSaveTextActionListener(saveToFileListener);
         commandManagerWindow.setRunCommandActionListener(new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager()));
+        commandManagerWindow.setDuplicateCommandActionListener(duplicateListener);
         application.addWindowComponent("Command Manager", commandManagerWindow);
 
         CommandManagerWindowCommandChangeObserver windowObserver = new CommandManagerWindowCommandChangeObserver(

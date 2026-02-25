@@ -31,10 +31,12 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
     private JButton btnSaveTextCommand;
     private JButton btnClearObservers;
     private JButton btnRunCommand;
+    private JButton btnDuplicateCommand;
     private String observerListString;
     private JTextArea observerListField;
     private String lastImportedExtension;
     private File lastImportedFile;
+    private String lastImportedRawText;
 
     private static final long serialVersionUID = 9204679248304669948L;
 
@@ -89,6 +91,13 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         c.gridx = 0;
         c.weighty = 0;
         content.add(btnRunCommand, c);
+
+        btnDuplicateCommand = new JButton("Duplicate command (deep copy)");
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.gridx = 0;
+        c.weighty = 0;
+        content.add(btnDuplicateCommand, c);
 
         JButton btnClearCommand = new JButton("Clear command");
         btnClearCommand.addActionListener((ActionEvent e) -> this.clearCommand());
@@ -197,6 +206,10 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         btnRunCommand.addActionListener(actionListener);
     }
 
+    public void setDuplicateCommandActionListener(ActionListener actionListener) {
+        btnDuplicateCommand.addActionListener(actionListener);
+    }
+
     public void setPreviewWindow(CommandPreviewWindow commandPreviewWindow) {
         this.commandPreviewWindow = commandPreviewWindow;
     }
@@ -206,6 +219,11 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
         importedCommandField.setCaretPosition(0);
         lastImportedExtension = extension;
         lastImportedFile = file;
+    }
+
+    public void setImportedCommandTextFromFile(String text, String extension, File file) {
+        setImportedCommandText(text, extension, file);
+        lastImportedRawText = text;
     }
 
     public String getImportedCommandText() {
@@ -218,5 +236,9 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
     public File getLastImportedFile() {
         return lastImportedFile;
+    }
+
+    public String getLastImportedRawText() {
+        return lastImportedRawText;
     }
 }

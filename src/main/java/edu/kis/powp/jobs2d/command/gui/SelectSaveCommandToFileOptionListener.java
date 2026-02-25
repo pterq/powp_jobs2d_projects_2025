@@ -8,11 +8,11 @@ import java.nio.file.Files;
 
 import javax.swing.JOptionPane;
 
+import edu.kis.powp.jobs2d.command.importer.CommandCopyFormatter;
 import edu.kis.powp.jobs2d.command.importer.CommandExportFormatter;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
 import edu.kis.powp.jobs2d.command.importer.CommandImportResult;
-import edu.kis.powp.jobs2d.command.importer.CommandImportTextFormatter;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 
 public class SelectSaveCommandToFileOptionListener implements ActionListener {
@@ -20,6 +20,7 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
     private final CommandManagerWindow commandManagerWindow;
     private final CommandImportParserSelector parserSelector;
     private final CommandExportFormatter exportFormatter;
+    private final CommandCopyFormatter copyFormatter;
 
     public SelectSaveCommandToFileOptionListener(
             CommandManager commandManager,
@@ -30,12 +31,13 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
         this.commandManagerWindow = commandManagerWindow;
         this.parserSelector = parserSelector;
         this.exportFormatter = exportFormatter;
+        this.copyFormatter = new CommandCopyFormatter(exportFormatter);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        File target = commandManagerWindow.getLastImportedFile();
-        if (target == null) {
+        File original = commandManagerWindow.getLastImportedFile();
+        if (original == null) {
             JOptionPane.showMessageDialog(null, "No imported file to overwrite.", "Save Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -54,19 +56,15 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
 
         try {
             CommandImportResult result = parser.parse(text);
-            String extension = getExtension(target.getName());
+            String extension = getExtension(original.getName());
             if (extension == null) {
                 extension = commandManagerWindow.getLastImportedExtension();
             }
 
-            if ("csv".equalsIgnoreCase(extension) || "txt".equalsIgnoreCase(extension)) {
-                String cleaned = cleanCsvText(text);
-                Files.write(target.toPath(), cleaned.getBytes(StandardCharsets.UTF_8));
-                commandManagerWindow.setImportedCommandText(cleaned, extension, target);
-            } else {
-                String output = exportFormatter.format(result, extension);
-                Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
-            }
+            File target = createCopyTarget(original);
+            String output = copyFormatter.formatCopy(result, extension, text);
+            Files.write(target.toPath(), output.getBytes(StandardCharsets.UTF_8));
+            commandManagerWindow.setImportedCommandTextFromFile(output, extension, target);
 
             commandManager.setCurrentCommand(result.getCommands(), result.getName());
             JOptionPane.showMessageDialog(null, "Command saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -83,23 +81,20 @@ public class SelectSaveCommandToFileOptionListener implements ActionListener {
         return fileName.substring(dotIndex + 1);
     }
 
-    private String cleanCsvText(String text) {
-        String normalized = text.replace("\r\n", "\n").replace("\r", "\n");
-        StringBuilder cleaned = new StringBuilder();
-        String[] lines = normalized.split("\n", -1);
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-            if (trimmed.matches("\\d+")) {
-                continue;
-            }
-            cleaned.append(trimmed).append("\n");
+    private File createCopyTarget(File original) {
+        String name = original.getName();
+        int dotIndex = name.lastIndexOf('.');
+        String base = dotIndex > 0 ? name.substring(0, dotIndex) : name;
+        String ext = dotIndex > 0 ? name.substring(dotIndex) : "";
+
+        File parent = original.getParentFile();
+        File candidate = new File(parent, base + "_copy" + ext);
+        int counter = 2;
+        while (candidate.exists()) {
+            candidate = new File(parent, base + "_copy" + counter + ext);
+            counter++;
         }
-        if (cleaned.length() == 0) {
-            return "";
-        }
-        return cleaned.toString();
+        return candidate;
     }
+
 }
