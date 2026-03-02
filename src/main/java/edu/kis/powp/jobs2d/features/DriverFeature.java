@@ -1,23 +1,20 @@
 package edu.kis.powp.jobs2d.features;
 
+import java.util.logging.Logger;
+
 import edu.kis.legacy.drawer.panel.DrawPanelController;
 import edu.kis.legacy.drawer.shape.LineFactory;
 import edu.kis.powp.appbase.Application;
 import edu.kis.powp.jobs2d.drivers.AnimatedDriverDecorator;
 import edu.kis.powp.jobs2d.drivers.CanvasLimitedDriverDecorator;
-import edu.kis.powp.jobs2d.drivers.DriverComposite;
 import edu.kis.powp.jobs2d.drivers.DriverManager;
-import edu.kis.powp.jobs2d.drivers.LoggerDriver;
 import edu.kis.powp.jobs2d.drivers.RecordingDriverDecorator;
 import edu.kis.powp.jobs2d.drivers.SelectDriverMenuOptionListener;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
 import edu.kis.powp.jobs2d.drivers.strategy.OnCanvasExceededLogWarning;
 import edu.kis.powp.jobs2d.drivers.strategy.OnCanvasExceededStrategy;
-import edu.kis.powp.jobs2d.drivers.transformation.DriverFeatureFactory;
 import edu.kis.powp.jobs2d.events.SelectLoadRecordedCommandOptionListener;
 import edu.kis.powp.jobs2d.visitor.VisitableJob2dDriver;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 public class DriverFeature implements IFeature {
 
@@ -70,10 +67,12 @@ public class DriverFeature implements IFeature {
     }
 
     /**
-     * Update driver info.
+     * Update driver info with current driver name and enabled extensions.
      */
     public static void updateDriverInfo() {
-        app.updateInfo(driverManager.getCurrentDriver().toString());
+        String driverName = driverManager.getCurrentDriver().toString();
+
+        app.updateInfo(driverName);
     }
 
     public static void setConfigurationStrategy(DriverConfigurationStrategy strategy) {
@@ -97,11 +96,9 @@ public class DriverFeature implements IFeature {
     public static void setupDefaultDrivers(Application application, Logger logger) {
         DriverFeature.setConfigurationStrategy(new MonitoringDriverConfigurationStrategy());
 
-        VisitableJob2dDriver loggerDriver = new LoggerDriver(logger);
-        DriverFeature.addDriver("Logger driver", loggerDriver);
-
         DrawPanelController drawerController = DrawerFeature.getDrawerController();
-        VisitableJob2dDriver basicLineDriver = new LineDriverAdapter(drawerController, LineFactory.getBasicLine(), "basic");
+        VisitableJob2dDriver basicLineDriver = new LineDriverAdapter(drawerController, LineFactory.getBasicLine(),
+                "basic");
         DriverFeature.addDriver("Basic line Simulator", basicLineDriver);
 
         AnimatedDriverDecorator slowAnimatedDriverDecorator = new AnimatedDriverDecorator(basicLineDriver);
@@ -116,34 +113,22 @@ public class DriverFeature implements IFeature {
         fastAnimatedDriverDecorator.setSpeedFast();
         DriverFeature.addDriver("Animated Line - fast", fastAnimatedDriverDecorator);
 
-        VisitableJob2dDriver specialLineDriver = new LineDriverAdapter(drawerController, LineFactory.getSpecialLine(), "special");
+        VisitableJob2dDriver specialLineDriver = new LineDriverAdapter(drawerController, LineFactory.getSpecialLine(),
+                "special");
         DriverFeature.addDriver("Special line Simulator", specialLineDriver);
 
-        VisitableJob2dDriver basicLineWithLoggerDriver = new DriverComposite(Arrays.asList(basicLineDriver, loggerDriver));
-        DriverFeature.addDriver("Logger + Basic line", basicLineWithLoggerDriver);
-
-        VisitableJob2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
-        DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
-
         RecordingDriverDecorator recordingDriver = new RecordingDriverDecorator(basicLineDriver);
-        SelectLoadRecordedCommandOptionListener selectLoadRecordedCommandOptionListener = new SelectLoadRecordedCommandOptionListener(recordingDriver);
+        SelectLoadRecordedCommandOptionListener selectLoadRecordedCommandOptionListener = new SelectLoadRecordedCommandOptionListener(
+                recordingDriver);
         application.addTest("Stop recording & Load recorded command", selectLoadRecordedCommandOptionListener);
         DriverFeature.addDriver("Recording Driver", recordingDriver);
 
         // Set default driver
         DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
-        VisitableJob2dDriver rotatedDriver = DriverFeatureFactory.createRotateDriver(basicLineDriver, 45);
-        DriverFeature.addDriver("Basic Line + Rotate 45", rotatedDriver);
-
-        VisitableJob2dDriver scaledDriver = DriverFeatureFactory.createScaleDriver(basicLineDriver, 2.0);
-        DriverFeature.addDriver("Basic Line + Scale 2x", scaledDriver);
-
-        VisitableJob2dDriver flippedDriver = DriverFeatureFactory.createFlipDriver(basicLineDriver, true, false);
-        DriverFeature.addDriver("Basic Line + Flip Horizontal", flippedDriver);
 
         OnCanvasExceededStrategy onCanvasExceededStrategy = new OnCanvasExceededLogWarning();
         CanvasLimitedDriverDecorator canvasLimitedDriver = new CanvasLimitedDriverDecorator(basicLineDriver,
-            onCanvasExceededStrategy);
+                onCanvasExceededStrategy);
         DriverFeature.addDriver("Canvas-Limited Driver", canvasLimitedDriver);
 
         DriverFeature.updateDriverInfo();

@@ -13,7 +13,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParser;
 import edu.kis.powp.jobs2d.command.importer.CommandImportResult;
 import edu.kis.powp.jobs2d.command.importer.CommandImportParserSelector;
-import edu.kis.powp.jobs2d.command.importer.CommandImportTextFormatter;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 
 public class SelectImportCommandOptionListener implements ActionListener {
@@ -60,8 +59,7 @@ public class SelectImportCommandOptionListener implements ActionListener {
                 CommandImportResult result = parser.parse(content);
                 commandManager.setCurrentCommand(result.getCommands(), result.getName());
                 if (commandManagerWindow != null) {
-                    CommandImportTextFormatter formatter = new CommandImportTextFormatter();
-                    commandManagerWindow.setImportedCommandText(formatter.format(result), extension, file);
+                    commandManagerWindow.setImportedCommandTextFromFile(content, extension, file);
                 }
 
                 JOptionPane.showMessageDialog(null, "Command imported successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);

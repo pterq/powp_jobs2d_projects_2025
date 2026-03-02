@@ -54,9 +54,9 @@ public class CommandDeepCopyVisitor implements CommandVisitor {
             copiedCommands.add(copy);
         }
 
-        copy = CompoundCommand.fromListOfCommands(
-                copiedCommands,
-                compoundCommand.toString() + "_copy"
-        );
+        CompoundCommand.Builder builder = CompoundCommand.builder()
+                .setName(compoundCommand.toString() + "_copy")
+                .add(copiedCommands);
+        copy = builder.build();
     }
 }
