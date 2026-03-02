@@ -218,4 +218,7 @@ public class CompoundCommand implements ICompoundCommand {
         return name;
     }
 
+    public List<DriverCommand> getCommands() {
+        return commands;
+    }
 }
