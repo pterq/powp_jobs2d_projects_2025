@@ -4,6 +4,7 @@ package edu.kis.powp.jobs2d.command.gui.catalog;
 import edu.kis.powp.appbase.gui.WindowComponent;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalogEntry;
+import edu.kis.powp.jobs2d.command.catalog.CommandCatalogIO;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.observer.Subscriber;
 import javax.swing.*;
@@ -19,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import edu.kis.powp.jobs2d.command.DriverCommand;
-import edu.kis.powp.jobs2d.command.catalog.CommandCatalogIO;
 import java.awt.event.ActionEvent;
 
 
@@ -274,7 +274,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             File file = fileChooser.getSelectedFile();
 
             try {
-                CommandCatalog importedCatalog = CommandCatalogIO.loadFromProperties(file);
+                CommandCatalog importedCatalog = CommandCatalogIO.load(file);
 
                 String[] options = {"Merge", "Replace", "Cancel"};
                 int choice = JOptionPane.showOptionDialog(this,
@@ -363,7 +363,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             }
 
             try {
-                CommandCatalogIO.saveToProperties(catalog, file);
+                CommandCatalogIO.save(catalog, file);
                 JOptionPane.showMessageDialog(this,
                         "Catalog exported successfully to:\n" + file.getAbsolutePath(),
                         "Export Success",
