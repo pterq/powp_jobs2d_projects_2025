@@ -12,11 +12,22 @@ public class CommandCatalogEntry {
     private final Set<String> tags;
     private String description;
 
+    // For new created entry in Command Catalog
     public CommandCatalogEntry(String name, DriverCommand command) {
         this.id = java.util.UUID.randomUUID().toString();
         this.name = name;
         this.command = command;
         this.creationDate = LocalDateTime.now();
+        this.tags = new HashSet<>();
+        this.description = "";
+    }
+
+    // For imported entries in Command Catalog
+    public CommandCatalogEntry(String id, String name, DriverCommand command, LocalDateTime creationDate) {
+        this.id = (id != null && !id.trim().isEmpty()) ? id : java.util.UUID.randomUUID().toString();
+        this.name = name;
+        this.command = command;
+        this.creationDate = creationDate != null ? creationDate : LocalDateTime.now();
         this.tags = new HashSet<>();
         this.description = "";
     }

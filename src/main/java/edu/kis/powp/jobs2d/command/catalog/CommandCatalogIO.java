@@ -3,6 +3,8 @@ package edu.kis.powp.jobs2d.command.catalog;
 import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import edu.kis.powp.jobs2d.command.OperateToCommand;
@@ -95,7 +97,8 @@ public class CommandCatalogIO {
 
             DriverCommand command = deserializeCommand(props, prefix + "command.");
 
-            CommandCatalogEntry entry = new CommandCatalogEntry(name, command);
+            LocalDateTime creationDate = parseCreationDate(dateStr);
+            CommandCatalogEntry entry = new CommandCatalogEntry(id, name, command, creationDate);
             entry.setDescription(description);
 
             if (!tagsStr.isEmpty()) {
@@ -110,6 +113,19 @@ public class CommandCatalogIO {
         }
 
         return catalog;
+    }
+
+    private static LocalDateTime parseCreationDate(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return LocalDateTime.parse(dateStr.trim());
+        } catch (DateTimeParseException ex) {
+            // Keeps import resilient for older/custom date formats.
+            return null;
+        }
     }
 
     private static DriverCommand deserializeCommand(Properties props, String prefix) {
