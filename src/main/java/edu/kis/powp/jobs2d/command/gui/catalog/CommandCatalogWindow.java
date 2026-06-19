@@ -33,11 +33,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     private JTextField searchField;
     private JComboBox<String> searchTypeCombo;
 
-    private JButton btnRunCommand;
-    private ActionListener runCommandActionListener;
-
-
-
     public CommandCatalogWindow(CommandCatalog catalog, CommandManager commandManager) {
         this.catalog = catalog;
         this.commandManager = commandManager;
@@ -70,12 +65,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         JButton btnClear = new JButton("Clear");
         btnClear.addActionListener(e -> clearSearch());
         searchPanel.add(btnClear);
-
-        btnRunCommand = new JButton("Run Command");
-        btnRunCommand.addActionListener(e -> runSelectedCommand());
-        btnRunCommand.setEnabled(false);
-        searchPanel.add(btnRunCommand);
-
 
         add(searchPanel, BorderLayout.NORTH);
 
@@ -169,7 +158,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                     List<CommandCatalogEntry> entries = catalog.findByName(name);
                     if (!entries.isEmpty()) {
 
-                        btnRunCommand.setEnabled(true);
                         commandManager.setCurrentCommand(entries.get(0).getCommand());
 
 
@@ -182,42 +170,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             }
         });
     }
-
-    public void setRunCommandActionListener(ActionListener listener) {
-        this.runCommandActionListener = listener;
-    }
-
-    private void runSelectedCommand() {
-        int selectedRow = catalogTable.getSelectedRow();
-
-        DriverCommand currentCommand = commandManager.getCurrentCommand();
-        if (currentCommand == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No command loaded. Please load a command first using the Load button.",
-                    "No Command Loaded",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        String commandName = (String) tableModel.getValueAt(selectedRow, 0);
-
-        try {
-            if (runCommandActionListener != null) {
-                runCommandActionListener.actionPerformed(
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "RunCommand")
-                );
-            } else {
-                logger.warning("Run command listener is not configured.");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error running command: " + ex.getMessage(),
-                    "Execution Error",
-                    JOptionPane.ERROR_MESSAGE);
-            logger.log(Level.SEVERE, "Error running command: " + commandName, ex);
-        }
-    }
-
 
     private void performSearch() {
         String query = searchField.getText().trim();
@@ -434,8 +386,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
 
             DriverCommand currentCommand = commandManager.getCurrentCommand();
             if (currentCommand == null) {
-                btnRunCommand.setEnabled(false);
-
                 catalogTable.clearSelection();
             } else {
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
@@ -443,7 +393,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                     CommandCatalogEntry entry = catalog.getEntry(id);
                     if (entry != null && entry.getCommand() == currentCommand) {
                         catalogTable.setRowSelectionInterval(i, i);
-                        btnRunCommand.setEnabled(true);
                         break;
                     }
                 }

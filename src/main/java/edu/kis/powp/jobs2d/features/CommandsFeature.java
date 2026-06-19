@@ -158,9 +158,7 @@ public class CommandsFeature implements IFeature {
         );
         CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(catalogWindow);
         commandCatalog.getChangePublisher().addSubscriber(catalogWindow);
-        catalogWindow.setRunCommandActionListener(
-                new SelectRunCurrentCommandOptionListener(DriverFeature.getDriverManager())
-        );
+
         application.addWindowComponent("Command Catalog", catalogWindow);
 
     }
