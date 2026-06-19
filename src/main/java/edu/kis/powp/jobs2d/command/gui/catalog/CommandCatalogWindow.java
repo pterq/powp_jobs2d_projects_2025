@@ -62,7 +62,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         btnSearch.addActionListener(e -> performSearch());
         searchPanel.add(btnSearch);
 
-        JButton btnClear = new JButton("Clear");
+        JButton btnClear = new JButton("Clear Search");
         btnClear.addActionListener(e -> clearSearch());
         searchPanel.add(btnClear);
 
@@ -251,8 +251,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             }
 
             JOptionPane.showMessageDialog(this,
-                    "Current command in Manager:\n" + current + "\n\n" +
-                            "In Catalog as Name: " + catalogName,
+                    "Currenty loaded command:\n" + current + "\n",
                     "Current Command Info",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
