@@ -2,7 +2,9 @@ package edu.kis.powp.jobs2d.features;
 
 import edu.kis.powp.appbase.Application;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
+import edu.kis.powp.jobs2d.command.catalog.FileCommandCatalogStorage;
 import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogRepository;
+import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogStorage;
 import edu.kis.powp.jobs2d.command.catalog.ICommandSearchEngine;
 import edu.kis.powp.jobs2d.command.gui.CommandHistoryWindow;
 import edu.kis.powp.jobs2d.command.gui.CommandManagerWindow;
@@ -41,6 +43,7 @@ public class CommandsFeature implements IFeature {
     private static CommandHistorySubscriber commandHistorySubscriber;
     private static ICommandCatalogRepository commandCatalog;
     private static ICommandSearchEngine commandSearchEngine;
+    private static ICommandCatalogStorage commandCatalogStorage;
 
     public CommandsFeature() {
     }
@@ -61,6 +64,7 @@ public class CommandsFeature implements IFeature {
         CommandCatalog catalog = new CommandCatalog();
         commandCatalog = catalog;
         commandSearchEngine = catalog;
+        commandCatalogStorage = new FileCommandCatalogStorage();
     }
 
     private static void setupCommandManager() {
@@ -159,7 +163,8 @@ public class CommandsFeature implements IFeature {
         CommandCatalogWindow catalogWindow = new CommandCatalogWindow(
                 commandCatalog,
                 commandSearchEngine,
-                getDriverCommandManager()
+                getDriverCommandManager(),
+                commandCatalogStorage
         );
         CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(catalogWindow);
         commandCatalog.getChangePublisher().addSubscriber(catalogWindow);

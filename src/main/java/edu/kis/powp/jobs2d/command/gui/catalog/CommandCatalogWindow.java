@@ -5,7 +5,7 @@ import edu.kis.powp.appbase.gui.WindowComponent;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
 import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogRepository;
 import edu.kis.powp.jobs2d.command.catalog.ICommandEntry;
-import edu.kis.powp.jobs2d.command.catalog.CommandCatalogIO;
+import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogStorage;
 import edu.kis.powp.jobs2d.command.catalog.ICommandSearchEngine;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.observer.Subscriber;
@@ -30,15 +30,20 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     private final ICommandCatalogRepository catalog;
     private final ICommandSearchEngine searchEngine;
     private final CommandManager commandManager;
+    private final ICommandCatalogStorage catalogStorage;
     private JTable catalogTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JComboBox<String> searchTypeCombo;
 
-    public CommandCatalogWindow(ICommandCatalogRepository catalog, ICommandSearchEngine searchEngine, CommandManager commandManager) {
+    public CommandCatalogWindow(ICommandCatalogRepository catalog,
+                                ICommandSearchEngine searchEngine,
+                                CommandManager commandManager,
+                                ICommandCatalogStorage catalogStorage) {
         this.catalog = catalog;
         this.searchEngine = searchEngine;
         this.commandManager = commandManager;
+        this.catalogStorage = catalogStorage;
         this.catalog.getChangePublisher().addSubscriber(this);
         this.commandManager.getChangePublisher().addSubscriber(this);
 
@@ -267,7 +272,8 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Import Command Catalog");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Catalog files (*.properties)", "properties"));
+                "Catalog files (" + catalogStorage.getFileExtension() + ")",
+                getFileExtensions()));
 
         int result = fileChooser.showOpenDialog(this);
 
@@ -275,7 +281,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             File file = fileChooser.getSelectedFile();
 
             try {
-                CommandCatalog importedCatalog = CommandCatalogIO.load(file);
+                CommandCatalog importedCatalog = catalogStorage.load(file);
 
                 String[] options = {"Merge", "Replace", "Cancel"};
                 int choice = JOptionPane.showOptionDialog(this,
@@ -339,10 +345,12 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Export Command Catalog");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Catalog files (*.properties)", "properties"));
+                "Catalog files (" + catalogStorage.getFileExtension() + ")",
+                getFileExtensions()));
 
 
-        fileChooser.setSelectedFile(new File("command_catalog.properties"));
+        String defaultExtension = getPrimaryFileExtension();
+        fileChooser.setSelectedFile(new File("command_catalog." + defaultExtension));
 
         int result = fileChooser.showSaveDialog(this);
 
@@ -350,7 +358,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             File file = fileChooser.getSelectedFile();
 
             if (!file.getName().contains(".")) {
-                file = new File(file.getAbsolutePath() + ".properties");
+                file = new File(file.getAbsolutePath() + "." + defaultExtension);
             }
 
             if (file.exists()) {
@@ -364,7 +372,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             }
 
             try {
-                CommandCatalogIO.save(catalog, file);
+                catalogStorage.save(catalog, file);
                 JOptionPane.showMessageDialog(this,
                         "Catalog exported successfully to:\n" + file.getAbsolutePath(),
                         "Export Success",
@@ -377,6 +385,22 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                 logger.log(Level.SEVERE, "Error exporting catalog", ex);
             }
         }
+    }
+
+    private String[] getFileExtensions() {
+        return Arrays.stream(catalogStorage.getFileExtension().split(";"))
+                .map(String::trim)
+                .map(ext -> ext.replace("*.", ""))
+                .filter(ext -> !ext.isEmpty())
+                .toArray(String[]::new);
+    }
+
+    private String getPrimaryFileExtension() {
+        String[] extensions = getFileExtensions();
+        if (extensions.length == 0) {
+            return "properties";
+        }
+        return extensions[0];
     }
 
     @Override
