@@ -1,6 +1,7 @@
 package edu.kis.powp.jobs2d.command;
 
 import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.command.catalog.CommandSerializer;
 import edu.kis.powp.jobs2d.visitor.CommandVisitor;
 
 /**
@@ -41,5 +42,10 @@ public class OperateToCommand implements DriverCommand {
     @Override
     public void accept(CommandVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public void accept(CommandSerializer serializer) {
+        serializer.visit(this);
     }
 }
