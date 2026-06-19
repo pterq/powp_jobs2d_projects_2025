@@ -18,12 +18,11 @@ public class CommandCatalogIO {
         for (CommandCatalogEntry entry : catalog.getAllEntries()) {
             String prefix = "command." + index + ".";
             props.setProperty(prefix + "id", entry.getId());
-            props.setProperty(prefix + "name", entry.getName());
-            props.setProperty(prefix + "description", entry.getDescription());
             props.setProperty(prefix + "date", entry.getCreationDate().toString());
+            props.setProperty(prefix + "description", entry.getDescription());
             props.setProperty(prefix + "tags", String.join(",", entry.getTags()));
 
-            serializeCommand(entry.getCommand(), props, prefix + "command.");
+            serializeCommand(entry.getCommand(), props, prefix + "command.", entry.getName());
 
             index++;
         }
@@ -36,17 +35,18 @@ public class CommandCatalogIO {
         }
     }
 
-    private static void serializeCommand(DriverCommand command, Properties props, String prefix) {
+    private static void serializeCommand(DriverCommand command, Properties props, String prefix, String rootEntryName) {
         if (command instanceof CompoundCommand) {
             props.setProperty(prefix + "type", "compound");
             CompoundCommand compound = (CompoundCommand) command;
-            props.setProperty(prefix + "name", compound.toString());
+            String serializedName = rootEntryName != null ? rootEntryName : compound.toString();
+            props.setProperty(prefix + "name", serializedName);
 
             List<DriverCommand> commands = compound.getCommands();
             props.setProperty(prefix + "count", String.valueOf(commands.size()));
 
             for (int i = 0; i < commands.size(); i++) {
-                serializeCommand(commands.get(i), props, prefix + "cmd." + i + ".");
+                serializeCommand(commands.get(i), props, prefix + "cmd." + i + ".", null);
             }
 
         } else if (command instanceof SetPositionCommand) {
@@ -83,7 +83,11 @@ public class CommandCatalogIO {
             String prefix = "command." + i + ".";
 
             String id = props.getProperty(prefix + "id");
-            String name = props.getProperty(prefix + "name");
+            String name = props.getProperty(prefix + "command.name");
+            if (name == null) {
+                // Backward compatibility for older exports.
+                name = props.getProperty(prefix + "name");
+            }
             String description = props.getProperty(prefix + "description");
             String dateStr = props.getProperty(prefix + "date");
             String tagsStr = props.getProperty(prefix + "tags", "");
