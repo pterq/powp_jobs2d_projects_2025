@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -225,14 +226,10 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                     results = catalog.findByName(query);
                     break;
                 case "Tags":
-                    String[] tagsArray = query.split(",");
-                    List<String> tags = new java.util.ArrayList<>();
-                    for (String tag : tagsArray) {
-                        String trimmed = tag.trim();
-                        if (!trimmed.isEmpty()) {
-                            tags.add(trimmed);
-                        }
-                    }
+                    List<String> tags = Arrays.stream(query.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
                     results = catalog.findByTags(tags);
                     break;
                 default:
