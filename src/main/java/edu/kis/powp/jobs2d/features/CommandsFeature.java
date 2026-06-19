@@ -2,6 +2,8 @@ package edu.kis.powp.jobs2d.features;
 
 import edu.kis.powp.appbase.Application;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
+import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogRepository;
+import edu.kis.powp.jobs2d.command.catalog.ICommandSearchEngine;
 import edu.kis.powp.jobs2d.command.gui.CommandHistoryWindow;
 import edu.kis.powp.jobs2d.command.gui.CommandManagerWindow;
 import edu.kis.powp.jobs2d.command.gui.CommandManagerWindowCommandChangeObserver;
@@ -29,7 +31,6 @@ import edu.kis.powp.jobs2d.events.SelectRunCurrentFlippedCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentRotatedCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentScaledDownCommandOptionListener;
 import edu.kis.powp.jobs2d.events.SelectRunCurrentScaledUpCommandOptionListener;
-import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
 import edu.kis.powp.jobs2d.command.gui.catalog.CommandCatalogWindow;
 
 
@@ -38,12 +39,13 @@ public class CommandsFeature implements IFeature {
     private static CommandManager commandManager;
     private static CommandHistory commandHistory;
     private static CommandHistorySubscriber commandHistorySubscriber;
-    private static CommandCatalog commandCatalog;
+    private static ICommandCatalogRepository commandCatalog;
+    private static ICommandSearchEngine commandSearchEngine;
 
     public CommandsFeature() {
     }
 
-    public static CommandCatalog getCommandCatalog() {
+    public static ICommandCatalogRepository getCommandCatalog() {
         return commandCatalog;
     }
 
@@ -56,7 +58,9 @@ public class CommandsFeature implements IFeature {
     }
 
     private static void setupCommandCatalog() {
-        commandCatalog = new CommandCatalog();
+        CommandCatalog catalog = new CommandCatalog();
+        commandCatalog = catalog;
+        commandSearchEngine = catalog;
     }
 
     private static void setupCommandManager() {
@@ -154,6 +158,7 @@ public class CommandsFeature implements IFeature {
 
         CommandCatalogWindow catalogWindow = new CommandCatalogWindow(
                 commandCatalog,
+                commandSearchEngine,
                 getDriverCommandManager()
         );
         CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(catalogWindow);

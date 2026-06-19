@@ -20,9 +20,9 @@ public class PropertiesCommandSerializer {
      *
      * @param catalog catalog to serialize
      */
-    public void serialize(CommandCatalog catalog) {
+    public void serialize(ICommandCatalogRepository catalog) {
         int index = 0;
-        for (CommandCatalogEntry entry : catalog.getAllEntries()) {
+        for (ICommandEntry entry : catalog.getAllEntries()) {
             serializeEntry(entry, index);
             index++;
         }
@@ -37,7 +37,7 @@ public class PropertiesCommandSerializer {
      * @param entry entry to serialize
      * @param index entry index
      */
-    private void serializeEntry(CommandCatalogEntry entry, int index) {
+    private void serializeEntry(ICommandEntry entry, int index) {
         String prefix = "command." + index + ".";
 
         properties.setProperty(prefix + "id", entry.getId());

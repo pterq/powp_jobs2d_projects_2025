@@ -5,51 +5,55 @@ import edu.kis.powp.observer.Publisher;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CommandCatalog {
-    private final Map<String, CommandCatalogEntry> entries = new LinkedHashMap<>();
+public class CommandCatalog implements ICommandCatalogRepository, ICommandSearchEngine {
+    private final Map<String, ICommandEntry> entries = new LinkedHashMap<>();
     private final Publisher changePublisher = new Publisher();
 
+    @Override
     public void addCommand(String name, DriverCommand command) {
         CommandCatalogEntry entry = new CommandCatalogEntry(name, command);
         entries.put(entry.getId(), entry);
         changePublisher.notifyObservers();
     }
 
-    public void addCommand(CommandCatalogEntry entry) {
+    @Override
+    public void addCommand(ICommandEntry entry) {
         entries.put(entry.getId(), entry);
         changePublisher.notifyObservers();
     }
 
+    @Override
     public void removeCommand(String id) {
         entries.remove(id);
         changePublisher.notifyObservers();
     }
 
-    public CommandCatalogEntry getEntry(String id) {
-        return entries.get(id);
+    @Override
+    public Optional<ICommandEntry> getEntry(String id) {
+        return Optional.ofNullable(entries.get(id));
     }
 
-    public List<CommandCatalogEntry> getAllEntries() {
+    @Override
+    public List<ICommandEntry> getAllEntries() {
         return new ArrayList<>(entries.values());
     }
 
-    public List<CommandCatalogEntry> findByName(String namePattern) {
+    @Override
+    public List<ICommandEntry> findByName(String namePattern) {
         return entries.values().stream()
                 .filter(e -> e.getName().toLowerCase().contains(namePattern.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    public List<CommandCatalogEntry> findByTag(String tag) {
-        List<CommandCatalogEntry> result = entries.values().stream()
-                .filter(e -> {
-                    boolean hasTag = e.hasTag(tag);
-                    return hasTag;
-                })
+    @Override
+    public List<ICommandEntry> findByTag(String tag) {
+        return entries.values().stream()
+                .filter(e -> e.hasTag(tag))
                 .collect(Collectors.toList());
-        return result;
     }
 
-    public List<CommandCatalogEntry> findByTags(List<String> tags) {
+    @Override
+    public List<ICommandEntry> findByTags(List<String> tags) {
         return entries.values().stream()
                 .filter(e -> tags.stream().allMatch(searchTag ->
                         e.getTags().stream().anyMatch(t -> t.toLowerCase().contains(searchTag.toLowerCase()))
@@ -57,14 +61,17 @@ public class CommandCatalog {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public int size() {
         return entries.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return entries.isEmpty();
     }
 
+    @Override
     public Publisher getChangePublisher() {
         return changePublisher;
     }

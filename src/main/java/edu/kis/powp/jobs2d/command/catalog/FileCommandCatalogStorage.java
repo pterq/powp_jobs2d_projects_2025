@@ -14,7 +14,7 @@ import java.util.Properties;
 public class FileCommandCatalogStorage implements ICommandCatalogStorage {
 
     @Override
-    public void save(CommandCatalog catalog, File file) throws IOException {
+    public void save(ICommandCatalogRepository catalog, File file) throws IOException {
         Properties props = new Properties();
         PropertiesCommandSerializer serializer = new PropertiesCommandSerializer(props);
         serializer.serialize(catalog);

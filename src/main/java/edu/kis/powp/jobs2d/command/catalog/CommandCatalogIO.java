@@ -19,7 +19,7 @@ public class CommandCatalogIO {
      * @param file target file
      * @throws IOException if save operation fails
      */
-    public static void save(CommandCatalog catalog, File file) throws IOException {
+    public static void save(ICommandCatalogRepository catalog, File file) throws IOException {
         ICommandCatalogStorage storage = CommandCatalogStorageFactory.findStorage(file);
         storage.save(catalog, file);
     }
@@ -43,7 +43,7 @@ public class CommandCatalogIO {
      * @param file target file
      * @throws IOException if save operation fails
      */
-    public static void saveToProperties(CommandCatalog catalog, File file) throws IOException {
+    public static void saveToProperties(ICommandCatalogRepository catalog, File file) throws IOException {
         DEFAULT_STORAGE.save(catalog, file);
     }
 

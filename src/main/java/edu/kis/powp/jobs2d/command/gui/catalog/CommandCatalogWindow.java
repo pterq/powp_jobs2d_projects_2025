@@ -3,38 +3,41 @@ package edu.kis.powp.jobs2d.command.gui.catalog;
 
 import edu.kis.powp.appbase.gui.WindowComponent;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
-import edu.kis.powp.jobs2d.command.catalog.CommandCatalogEntry;
+import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogRepository;
+import edu.kis.powp.jobs2d.command.catalog.ICommandEntry;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalogIO;
+import edu.kis.powp.jobs2d.command.catalog.ICommandSearchEngine;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.observer.Subscriber;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import edu.kis.powp.jobs2d.command.DriverCommand;
-import java.awt.event.ActionEvent;
 
 
 public class CommandCatalogWindow extends JFrame implements WindowComponent, Subscriber {
     private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private final CommandCatalog catalog;
+    private final ICommandCatalogRepository catalog;
+    private final ICommandSearchEngine searchEngine;
     private final CommandManager commandManager;
     private JTable catalogTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JComboBox<String> searchTypeCombo;
 
-    public CommandCatalogWindow(CommandCatalog catalog, CommandManager commandManager) {
+    public CommandCatalogWindow(ICommandCatalogRepository catalog, ICommandSearchEngine searchEngine, CommandManager commandManager) {
         this.catalog = catalog;
+        this.searchEngine = searchEngine;
         this.commandManager = commandManager;
         this.catalog.getChangePublisher().addSubscriber(this);
         this.commandManager.getChangePublisher().addSubscriber(this);
@@ -79,12 +82,12 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             @Override
             public void setValueAt(Object value, int row, int column) {
                 String name = (String) getValueAt(row, 0);
-                List<CommandCatalogEntry> entries = catalog.findByName(name);
+                List<ICommandEntry> entries = searchEngine.findByName(name);
 
 
 
                 if (!entries.isEmpty()) {
-                    CommandCatalogEntry entry = entries.get(0);
+                    ICommandEntry entry = entries.get(0);
                     if (column == 0) { // Name column
                         String previousName = entry.getName();
                         String newName = (String) value;
@@ -155,7 +158,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
 
                 if (col == 4) {
                     String name = (String) tableModel.getValueAt(row, 0);
-                    List<CommandCatalogEntry> entries = catalog.findByName(name);
+                    List<ICommandEntry> entries = searchEngine.findByName(name);
                     if (!entries.isEmpty()) {
 
                         commandManager.setCurrentCommand(entries.get(0).getCommand());
@@ -175,21 +178,21 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         String query = searchField.getText().trim();
         String searchType = (String) searchTypeCombo.getSelectedItem();
 
-        List<CommandCatalogEntry> results;
+        List<ICommandEntry> results;
 
         if (query.isEmpty()) {
             results = catalog.getAllEntries();
         } else {
             switch (Objects.requireNonNull(searchType)) {
                 case "Name":
-                    results = catalog.findByName(query);
+                    results = searchEngine.findByName(query);
                     break;
                 case "Tags":
                     List<String> tags = Arrays.stream(query.split(","))
                             .map(String::trim)
                             .filter(s -> !s.isEmpty())
                             .collect(Collectors.toList());
-                    results = catalog.findByTags(tags);
+                    results = searchEngine.findByTags(tags);
                     break;
                 default:
                     results = catalog.getAllEntries();
@@ -207,13 +210,13 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     }
 
     private void refreshTable() {
-        List<CommandCatalogEntry> allEntries = catalog.getAllEntries();
+        List<ICommandEntry> allEntries = catalog.getAllEntries();
         updateTable(allEntries);
     }
 
-    private void updateTable(List<CommandCatalogEntry> entries) {
+    private void updateTable(List<ICommandEntry> entries) {
         tableModel.setRowCount(0);
-        for (CommandCatalogEntry entry : entries) {
+        for (ICommandEntry entry : entries) {
             tableModel.addRow(new Object[]{
                     entry.getName(),
                     entry.getDescription(),
@@ -242,10 +245,8 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     private void showCurrentCommand() {
         DriverCommand current = commandManager.getCurrentCommand();
         if (current != null) {
-            String catalogName = "Not in catalog";
-            for (CommandCatalogEntry entry : catalog.getAllEntries()) {
+            for (ICommandEntry entry : catalog.getAllEntries()) {
                 if (entry.getCommand() == current) {
-                    catalogName = entry.getName();
                     break;
                 }
             }
@@ -289,17 +290,17 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                         options[0]);
 
                 if (choice == 0) { // Merge
-                    for (CommandCatalogEntry entry : importedCatalog.getAllEntries()) {
+                    for (ICommandEntry entry : importedCatalog.getAllEntries()) {
                         catalog.addCommand(entry);
                     }
                     JOptionPane.showMessageDialog(this,
                             "Imported " + importedCatalog.size() + " commands (merged).");
 
                 } else if (choice == 1) { // Replace
-                    for (CommandCatalogEntry entry : catalog.getAllEntries()) {
+                    for (ICommandEntry entry : catalog.getAllEntries()) {
                         catalog.removeCommand(entry.getId());
                     }
-                    for (CommandCatalogEntry entry : importedCatalog.getAllEntries()) {
+                    for (ICommandEntry entry : importedCatalog.getAllEntries()) {
                         catalog.addCommand(entry);
                     }
                     JOptionPane.showMessageDialog(this,
@@ -389,8 +390,8 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             } else {
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     String id = (String) tableModel.getValueAt(i, 5);
-                    CommandCatalogEntry entry = catalog.getEntry(id);
-                    if (entry != null && entry.getCommand() == currentCommand) {
+                    Optional<ICommandEntry> entry = catalog.getEntry(id);
+                    if (entry.isPresent() && entry.get().getCommand() == currentCommand) {
                         catalogTable.setRowSelectionInterval(i, i);
                         break;
                     }

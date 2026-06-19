@@ -16,7 +16,7 @@ public interface ICommandCatalogStorage {
      * @param file target file
      * @throws IOException if save operation fails
      */
-    void save(CommandCatalog catalog, File file) throws IOException;
+    void save(ICommandCatalogRepository catalog, File file) throws IOException;
 
     /**
      * Load command catalog from file.
