@@ -219,6 +219,10 @@ public class CompoundCommand implements ICompoundCommand {
     }
 
     public List<DriverCommand> getCommands() {
-        return commands;
+        List<DriverCommand> copied = new ArrayList<>();
+        for (DriverCommand command : commands) {
+            copied.add(command.copy());
+        }
+        return Collections.unmodifiableList(copied);
     }
 }
