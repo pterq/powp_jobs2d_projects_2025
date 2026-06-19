@@ -7,6 +7,7 @@ import edu.kis.powp.jobs2d.command.catalog.CommandCatalogEntry;
 import edu.kis.powp.jobs2d.command.manager.CommandManager;
 import edu.kis.powp.observer.Subscriber;
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -117,6 +118,8 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         catalogTable.setCellSelectionEnabled(false);
         catalogTable.setColumnSelectionAllowed(false);
         catalogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // Commits edited cell value when focus moves to another component (e.g. Export button).
+        catalogTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         catalogTable.removeColumn(catalogTable.getColumnModel().getColumn(5));
         catalogTable.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer());
 
@@ -361,6 +364,14 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     }
 
     private void exportCatalog() {
+        // Ensures currently edited table cell is committed before serialization.
+        if (catalogTable != null && catalogTable.isEditing()) {
+            TableCellEditor editor = catalogTable.getCellEditor();
+            if (editor != null) {
+                editor.stopCellEditing();
+            }
+        }
+
         if (catalog.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Catalog is empty. Nothing to export.",
