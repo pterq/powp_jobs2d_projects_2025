@@ -15,15 +15,17 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import edu.kis.powp.jobs2d.command.DriverCommand;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalogIO;
 import java.awt.event.ActionEvent;
-import edu.kis.powp.jobs2d.drivers.DriverManager;
-import edu.kis.powp.jobs2d.features.DriverFeature;
 
 
 public class CommandCatalogWindow extends JFrame implements WindowComponent, Subscriber {
+    private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     private final CommandCatalog catalog;
     private final CommandManager commandManager;
     private JTable catalogTable;
@@ -90,19 +92,25 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                 String name = (String) getValueAt(row, 0);
                 List<CommandCatalogEntry> entries = catalog.findByName(name);
 
+
+
                 if (!entries.isEmpty()) {
                     CommandCatalogEntry entry = entries.get(0);
                     if (column == 0) { // Name column
+                        String previousName = entry.getName();
                         String newName = (String) value;
                         entry.setName(newName);
-                        System.out.println("Name updated for " + name + ": " + newName);
+                        logger.info("Name for: '" + name + "' updated: before='" + previousName + "', after='" + newName + "'");
                     } else if (column == 1) { // Description column
+                        String previousDescription = entry.getDescription();
                         String newDescription = (String) value;
                         entry.setDescription(newDescription);
-                        System.out.println("Description updated for " + name + ": " + newDescription);
+                        logger.info("Description for: '" + name + "' updated: before='" + previousDescription + "', after='" + newDescription + "'");
                     } else if (column == 2) { // Tags column
-                        entry.setTags((String) value);
-                        System.out.println("Tags updated for " + name + ": " + value);
+                        String previousTags = String.join(", ", entry.getTags());
+                        String newTags = (String) value;
+                        entry.setTags(newTags);
+                        logger.info("Tags for: '" + name + "'  updated: before='" + previousTags + "', after='" + newTags + "'");
                     }
                 }
                 super.setValueAt(value, row, column);
@@ -192,7 +200,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         }
 
         String commandName = (String) tableModel.getValueAt(selectedRow, 0);
-        List<CommandCatalogEntry> entries = catalog.findByName(commandName);
 
         try {
             if (runCommandActionListener != null) {
@@ -200,14 +207,14 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                         new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "RunCommand")
                 );
             } else {
-                DriverManager driverManager = DriverFeature.getDriverManager();
+                logger.warning("Run command listener is not configured.");
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     "Error running command: " + ex.getMessage(),
                     "Execution Error",
                     JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            logger.log(Level.SEVERE, "Error running command: " + commandName, ex);
         }
     }
 
@@ -355,7 +362,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                         "Error importing catalog:\n" + ex.getMessage(),
                         "Import Error",
                         JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Error importing catalog", ex);
             }
         }
     }
@@ -415,7 +422,7 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                         "Error exporting catalog:\n" + ex.getMessage(),
                         "Export Error",
                         JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Error exporting catalog", ex);
             }
         }
     }
@@ -449,8 +456,17 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
         setVisible(!isVisible());
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        boolean wasVisible = isVisible();
+        super.setVisible(visible);
+        if (visible && !wasVisible) {
+            logger.info("CommandCatalogWindow started");
+        }
+    }
 
-    class ButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
+
+    static class ButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
         public ButtonRenderer() {
             setOpaque(true);
             setBackground(new Color(220, 220, 255));
