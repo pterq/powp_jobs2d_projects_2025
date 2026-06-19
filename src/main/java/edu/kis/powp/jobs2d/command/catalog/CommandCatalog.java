@@ -50,13 +50,11 @@ public class CommandCatalog {
     }
 
     public List<CommandCatalogEntry> findByTags(List<String> tags) {
-        List<CommandCatalogEntry> result = entries.values().stream()
-                .filter(e -> {
-                    boolean hasAllTags = tags.stream().allMatch(e::hasTag);
-                    return hasAllTags;
-                })
+        return entries.values().stream()
+                .filter(e -> tags.stream().allMatch(searchTag ->
+                        e.getTags().stream().anyMatch(t -> t.toLowerCase().contains(searchTag.toLowerCase()))
+                ))
                 .collect(Collectors.toList());
-        return result;
     }
 
     public int size() {
