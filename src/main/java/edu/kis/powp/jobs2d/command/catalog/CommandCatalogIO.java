@@ -38,35 +38,8 @@ public class CommandCatalogIO {
     }
 
     private static void serializeCommand(DriverCommand command, Properties props, String prefix, String rootEntryName) {
-        if (command instanceof CompoundCommand) {
-            props.setProperty(prefix + "type", "compound");
-            CompoundCommand compound = (CompoundCommand) command;
-            String serializedName = rootEntryName != null ? rootEntryName : compound.toString();
-            props.setProperty(prefix + "name", serializedName);
-
-            List<DriverCommand> commands = compound.getCommands();
-            props.setProperty(prefix + "count", String.valueOf(commands.size()));
-
-            for (int i = 0; i < commands.size(); i++) {
-                serializeCommand(commands.get(i), props, prefix + "cmd." + i + ".", null);
-            }
-
-        } else if (command instanceof SetPositionCommand) {
-            props.setProperty(prefix + "type", "setposition");
-            SetPositionCommand setPos = (SetPositionCommand) command;
-            props.setProperty(prefix + "x", String.valueOf(setPos.getPosX()));
-            props.setProperty(prefix + "y", String.valueOf(setPos.getPosY()));
-
-        } else if (command instanceof OperateToCommand) {
-            props.setProperty(prefix + "type", "operateto");
-            OperateToCommand operateTo = (OperateToCommand) command;
-            props.setProperty(prefix + "x", String.valueOf(operateTo.getPosX()));
-            props.setProperty(prefix + "y", String.valueOf(operateTo.getPosY()));
-
-        } else {
-            props.setProperty(prefix + "type", "unknown");
-            props.setProperty(prefix + "class", command.getClass().getName());
-        }
+        CommandSerializer serializer = new CommandSerializer(props, prefix, rootEntryName);
+        command.accept(serializer);
     }
 
 

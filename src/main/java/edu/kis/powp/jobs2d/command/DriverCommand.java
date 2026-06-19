@@ -1,6 +1,7 @@
 package edu.kis.powp.jobs2d.command;
 
 import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.command.catalog.CommandSerializer;
 import edu.kis.powp.jobs2d.visitor.CommandVisitor;
 
 /**
@@ -22,4 +23,13 @@ public interface DriverCommand {
      * @param visitor the visitor to accept.
      */
     public void accept(CommandVisitor visitor);
+
+    /**
+     * Accepts serializer visitor dedicated to command catalog export.
+     *
+     * @param serializer serializer visitor.
+     */
+    default void accept(CommandSerializer serializer) {
+        accept((CommandVisitor) serializer);
+    }
 }
