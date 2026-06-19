@@ -3,6 +3,7 @@ package edu.kis.powp.jobs2d.command.gui.catalog;
 
 import edu.kis.powp.appbase.gui.WindowComponent;
 import edu.kis.powp.jobs2d.command.catalog.CommandCatalog;
+import edu.kis.powp.jobs2d.command.catalog.CommandCatalogEntry;
 import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogRepository;
 import edu.kis.powp.jobs2d.command.catalog.ICommandEntry;
 import edu.kis.powp.jobs2d.command.catalog.ICommandCatalogStorage;
@@ -86,28 +87,34 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
 
             @Override
             public void setValueAt(Object value, int row, int column) {
-                String name = (String) getValueAt(row, 0);
-                List<ICommandEntry> entries = searchEngine.findByName(name);
+                Optional<ICommandEntry> optionalEntry = getEntryForRow(row);
 
-
-
-                if (!entries.isEmpty()) {
-                    ICommandEntry entry = entries.get(0);
+                if (optionalEntry.isPresent()) {
+                    ICommandEntry entry = optionalEntry.get();
+                    ICommandEntry updatedEntry = entry;
+                    String name = entry.getName();
                     if (column == 0) { // Name column
                         String previousName = entry.getName();
                         String newName = (String) value;
-                        entry.setName(newName);
+                        updatedEntry = entry.withName(newName);
                         logger.info("Name for: '" + name + "' updated: before='" + previousName + "', after='" + newName + "'");
                     } else if (column == 1) { // Description column
                         String previousDescription = entry.getDescription();
                         String newDescription = (String) value;
-                        entry.setDescription(newDescription);
+                        updatedEntry = entry.withDescription(newDescription);
                         logger.info("Description for: '" + name + "' updated: before='" + previousDescription + "', after='" + newDescription + "'");
                     } else if (column == 2) { // Tags column
                         String previousTags = String.join(", ", entry.getTags());
                         String newTags = (String) value;
-                        entry.setTags(newTags);
+                        updatedEntry = entry.withTags(newTags);
                         logger.info("Tags for: '" + name + "'  updated: before='" + previousTags + "', after='" + newTags + "'");
+                    }
+
+                    if (updatedEntry != entry) {
+                        catalog.updateCommand(updatedEntry);
+                        if (commandManager.getCurrentCommand() == entry.getCommand()) {
+                            commandManager.setCurrentCommand(updatedEntry.getCommand());
+                        }
                     }
                 }
                 super.setValueAt(value, row, column);
@@ -162,11 +169,11 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                 int col = catalogTable.columnAtPoint(e.getPoint());
 
                 if (col == 4) {
-                    String name = (String) tableModel.getValueAt(row, 0);
-                    List<ICommandEntry> entries = searchEngine.findByName(name);
-                    if (!entries.isEmpty()) {
-
-                        commandManager.setCurrentCommand(entries.get(0).getCommand());
+                    Optional<ICommandEntry> optionalEntry = getEntryForRow(row);
+                    if (optionalEntry.isPresent()) {
+                        ICommandEntry entry = optionalEntry.get();
+                        String name = entry.getName();
+                        commandManager.setCurrentCommand(entry.getCommand());
 
 
                         JOptionPane.showMessageDialog(CommandCatalogWindow.this,
@@ -242,7 +249,10 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
 
         String name = JOptionPane.showInputDialog(this, "Enter command name:");
         if (name != null && !name.trim().isEmpty()) {
-            catalog.addCommand(name, currentCommand.copy());
+            ICommandEntry newEntry = new CommandCatalogEntry(name, currentCommand.copy());
+            catalog.addCommand(newEntry);
+            // Keep manager and catalog in sync so UI uses the user-defined catalog name immediately.
+            commandManager.setCurrentCommand(newEntry.getCommand());
             refreshTable();
         }
     }
@@ -250,14 +260,8 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
     private void showCurrentCommand() {
         DriverCommand current = commandManager.getCurrentCommand();
         if (current != null) {
-            for (ICommandEntry entry : catalog.getAllEntries()) {
-                if (entry.getCommand() == current) {
-                    break;
-                }
-            }
-
             JOptionPane.showMessageDialog(this,
-                    "Currenty loaded command:\n" + current + "\n",
+                    "Currently loaded command: " + current,
                     "Current Command Info",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
@@ -401,6 +405,15 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
             return "properties";
         }
         return extensions[0];
+    }
+
+    private Optional<ICommandEntry> getEntryForRow(int row) {
+        if (row < 0 || row >= tableModel.getRowCount()) {
+            return Optional.empty();
+        }
+
+        String id = (String) tableModel.getValueAt(row, 5);
+        return catalog.getEntry(id);
     }
 
     @Override

@@ -10,6 +10,8 @@ public interface ICommandCatalogRepository {
 
     void addCommand(ICommandEntry entry);
 
+    void updateCommand(ICommandEntry entry);
+
     void removeCommand(String id);
 
     Optional<ICommandEntry> getEntry(String id);

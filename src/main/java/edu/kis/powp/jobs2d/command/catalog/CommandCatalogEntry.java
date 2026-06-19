@@ -1,53 +1,54 @@
 package edu.kis.powp.jobs2d.command.catalog;
 
+import edu.kis.powp.jobs2d.command.CompoundCommand;
 import edu.kis.powp.jobs2d.command.DriverCommand;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class CommandCatalogEntry implements ICommandEntry {
     private final String id;
-    private String name;
+    private final String name;
     private final DriverCommand command;
     private final LocalDateTime creationDate;
     private final Set<String> tags;
-    private String description;
+    private final String description;
 
     // For new created entry in Command Catalog
     public CommandCatalogEntry(String name, DriverCommand command) {
-        this.id = java.util.UUID.randomUUID().toString();
-        this.name = name;
-        this.command = command;
-        this.creationDate = LocalDateTime.now();
-        this.tags = new HashSet<>();
-        this.description = "";
+        this(java.util.UUID.randomUUID().toString(), name, command, LocalDateTime.now(), Collections.emptySet(), "");
     }
 
     // For imported entries in Command Catalog
     public CommandCatalogEntry(String id, String name, DriverCommand command, LocalDateTime creationDate) {
+        this(id, name, command, creationDate, Collections.emptySet(), "");
+    }
+
+    public CommandCatalogEntry(String id,
+                               String name,
+                               DriverCommand command,
+                               LocalDateTime creationDate,
+                               Collection<String> tags,
+                               String description) {
         this.id = (id != null && !id.trim().isEmpty()) ? id : java.util.UUID.randomUUID().toString();
-        this.name = name;
-        this.command = command;
+        this.name = normalizeName(name);
+        this.command = synchronizeCommandName(command, this.name);
         this.creationDate = creationDate != null ? creationDate : LocalDateTime.now();
-        this.tags = new HashSet<>();
-        this.description = "";
+        this.tags = Collections.unmodifiableSet(normalizeTags(tags));
+        this.description = description != null ? description : "";
     }
 
 
     @Override
-    public void setTags(Collection<String> newTags) {
-        tags.clear();
-        if (newTags != null) {
-            for (String tag : newTags) {
-                if (tag != null && !tag.trim().isEmpty()) {
-                    tags.add(tag.trim());
-                }
-            }
+    public ICommandEntry withTags(Collection<String> newTags) {
+        return new CommandCatalogEntry(id, name, command, creationDate, newTags, description);
+    }
+
+    @Override
+    public ICommandEntry withTags(String tagsString) {
+        if (tagsString == null || tagsString.trim().isEmpty()) {
+            return new CommandCatalogEntry(id, name, command, creationDate, Collections.emptySet(), description);
         }
-    }
-
-    @Override
-    public void setTags(String tagsString) {
-        setTags(Arrays.asList(tagsString.split(",")));
+        return withTags(Arrays.asList(tagsString.split(",")));
     }
 
 
@@ -62,10 +63,8 @@ public class CommandCatalogEntry implements ICommandEntry {
     }
 
     @Override
-    public void setName(String name) {
-        if (name != null && !name.trim().isEmpty()) {
-            this.name = name.trim();
-        }
+    public ICommandEntry withName(String name) {
+        return new CommandCatalogEntry(id, name, command, creationDate, tags, description);
     }
 
     @Override
@@ -85,25 +84,7 @@ public class CommandCatalogEntry implements ICommandEntry {
 
     @Override
     public String getDescription() {
-        return description != null ? description : "";
-    }
-
-    @Override
-    public void setDescription(String description) {
-        this.description = description != null ? description : "";
-    }
-
-
-    @Override
-    public void addTag(String tag) {
-        if (tag != null && !tag.trim().isEmpty()) {
-            tags.add(tag.trim());
-        }
-    }
-
-    @Override
-    public void removeTag(String tag) {
-        tags.remove(tag);
+        return description;
     }
 
     @Override
@@ -112,10 +93,8 @@ public class CommandCatalogEntry implements ICommandEntry {
     }
 
     @Override
-    public void addTags(Set<String> newTags) {
-        if (newTags != null) {
-            tags.addAll(newTags);
-        }
+    public ICommandEntry withDescription(String description) {
+        return new CommandCatalogEntry(id, name, command, creationDate, tags, description);
     }
 
 
@@ -126,6 +105,32 @@ public class CommandCatalogEntry implements ICommandEntry {
                 ", tags=" + tags +
                 ", creationDate=" + creationDate +
                 '}';
+    }
+
+    private static DriverCommand synchronizeCommandName(DriverCommand command, String entryName) {
+        if (command instanceof CompoundCommand) {
+            return ((CompoundCommand) command).withName(entryName);
+        }
+        return command;
+    }
+
+    private static String normalizeName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Unnamed Command";
+        }
+        return name.trim();
+    }
+
+    private static Set<String> normalizeTags(Collection<String> sourceTags) {
+        Set<String> normalized = new LinkedHashSet<>();
+        if (sourceTags != null) {
+            for (String tag : sourceTags) {
+                if (tag != null && !tag.trim().isEmpty()) {
+                    normalized.add(tag.trim());
+                }
+            }
+        }
+        return normalized;
     }
 
 

@@ -2,13 +2,14 @@ package edu.kis.powp.jobs2d.command.catalog;
 
 import edu.kis.powp.jobs2d.command.DriverCommand;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 public interface ICommandEntry extends ICommandTaggable {
     String getId();
 
     String getName();
 
-    void setName(String name);
+    ICommandEntry withName(String name);
 
     DriverCommand getCommand();
 
@@ -16,6 +17,10 @@ public interface ICommandEntry extends ICommandTaggable {
 
     String getDescription();
 
-    void setDescription(String description);
+    ICommandEntry withDescription(String description);
+
+    ICommandEntry withTags(Collection<String> tags);
+
+    ICommandEntry withTags(String tagsString);
 }
 

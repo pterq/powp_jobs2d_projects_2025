@@ -23,6 +23,15 @@ public class CommandCatalog implements ICommandCatalogRepository, ICommandSearch
     }
 
     @Override
+    public void updateCommand(ICommandEntry entry) {
+        if (entry == null || !entries.containsKey(entry.getId())) {
+            return;
+        }
+        entries.put(entry.getId(), entry);
+        changePublisher.notifyObservers();
+    }
+
+    @Override
     public void removeCommand(String id) {
         entries.remove(id);
         changePublisher.notifyObservers();

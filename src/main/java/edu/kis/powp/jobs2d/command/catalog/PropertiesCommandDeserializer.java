@@ -62,20 +62,17 @@ public class PropertiesCommandDeserializer {
         String tagsStr = properties.getProperty(prefix + "tags", "");
 
         DriverCommand command = deserializeCommand(prefix + "command.");
-
         LocalDateTime creationDate = parseCreationDate(dateStr);
-        CommandCatalogEntry entry = new CommandCatalogEntry(id, name, command, creationDate);
-        entry.setDescription(description);
-
+        List<String> tags = new ArrayList<>();
         if (!tagsStr.isEmpty()) {
             for (String tag : tagsStr.split(",")) {
                 if (!tag.trim().isEmpty()) {
-                    entry.addTag(tag.trim());
+                    tags.add(tag.trim());
                 }
             }
         }
 
-        return entry;
+        return new CommandCatalogEntry(id, name, command, creationDate, tags, description);
     }
 
     /**

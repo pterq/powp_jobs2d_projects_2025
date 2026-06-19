@@ -199,6 +199,11 @@ public class CompoundCommand implements ICompoundCommand {
         return new Builder();
     }
 
+    public CompoundCommand withName(String name) {
+        String normalizedName = (name == null || name.trim().isEmpty()) ? this.name : name.trim();
+        return new CompoundCommand(this.commands, normalizedName);
+    }
+
     /**
      * Returns the string representation of this compound command.
      * 
