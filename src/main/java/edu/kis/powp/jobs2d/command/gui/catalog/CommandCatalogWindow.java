@@ -169,10 +169,6 @@ public class CommandCatalogWindow extends JFrame implements WindowComponent, Sub
                 }
             }
         });
-
-
-
-
     }
 
     public void setRunCommandActionListener(ActionListener listener) {
